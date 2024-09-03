@@ -71,7 +71,7 @@ class Clashes(models.Model):
     cluster_id = models.IntegerField()
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     preference_id = models.IntegerField()
-    list_of_students = models.ManyToManyField('Student', related_name='clashes')  # A many-to-many relationship with the Student model
+    list_of_students = models.ManyToManyField('Student', related_name='clashing_students')  # A many-to-many relationship with the Student model
     selected_student = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL)
     is_processed = models.BooleanField(default=False)
 
