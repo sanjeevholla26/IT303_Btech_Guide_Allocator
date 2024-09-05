@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from enum import Enum
 
@@ -12,18 +12,44 @@ class EventStatus(Enum):
     def choices(cls):
         return [(key.value, key.name.capitalize()) for key in cls]
 
-# User model
-class User(AbstractUser):
-    email_id = models.EmailField(unique=True)  # Override to make email unique
-    recovery_email_id = models.EmailField(null=True, blank=True)
-    phone_no = models.CharField(max_length=15, null=True, blank=True)
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, edu_email_id, password=None, **extra_fields):
+        if not edu_email_id:
+            raise ValueError('The Email field must be set')
+        edu_email_id = self.normalize_email(edu_email_id)
+        # user = self.model(username=username.strip(), email=email, **extra_fields)
+        user = self.model(username=username, edu_email_id=edu_email_id, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, edu_email_id, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(username, edu_email_id, password, **extra_fields)
+
+class MyUser(AbstractUser):
+    # email = models.EmailField(unique=True)  # Override the default email field to make it unique
+    edu_email_id = models.EmailField(unique=True)
+    phone_no = models.CharField(max_length=15, unique=True)
 
     def __str__(self):
-        return self.username
+        return self.edu_email_id
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'edu_email_id'
+    REQUIRED_FIELDS = ['username']
 
 # Student model
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, primary_key=True)
     cgpa = models.DecimalField(max_digits=4, decimal_places=2)
     academic_year = models.IntegerField()  # e.g., 2024
     branch = models.CharField(max_length=100)
@@ -33,7 +59,7 @@ class Student(models.Model):
 
 # Faculty model
 class Faculty(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, primary_key=True)
     abbreviation = models.CharField(max_length=10, unique=True)
 
     def __str__(self):
@@ -43,7 +69,7 @@ class Faculty(models.Model):
 class AllocationEvent(models.Model):
     event_name = models.CharField(max_length=255)
     status = models.CharField(max_length=6, choices=EventStatus.choices(), default='open')
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     eligible_batch = models.CharField(max_length=255)  # e.g., "2026"
