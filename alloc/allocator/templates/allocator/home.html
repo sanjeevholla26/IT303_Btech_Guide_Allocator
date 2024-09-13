@@ -11,6 +11,8 @@
 {% block body %}
     <div>
         <h1>IT Dept BTECH Guide allocator</h1>
-        <p>{{request.user.username}}</p>
+        <p>NITK Mail ID : {{request.user.eduMailID}}</p>
+        <p>Username : {{request.user.username}}</p>
     </div>
+    <a href="../logout"><i>End the suffering by logging out.</i></a>
 {% endblock %}

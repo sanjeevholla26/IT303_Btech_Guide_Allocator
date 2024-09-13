@@ -13,17 +13,19 @@ class EventStatus(Enum):
         return [(key.value, key.name.capitalize()) for key in cls]
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, edu_email_id, password=None, **extra_fields):
-        if not edu_email_id:
-            raise ValueError('The Email field must be set')
-        edu_email_id = self.normalize_email(edu_email_id)
-        # user = self.model(username=username.strip(), email=email, **extra_fields)
-        user = self.model(username=username, edu_email_id=edu_email_id, **extra_fields)
+    def create_user(self, eduMailID, email, username, password=None, **extra_fields):
+        if not eduMailID:
+            raise ValueError('The eduMailID field must be set')
+        if not eduMailID.endswith("@nitk.edu.in"):
+            raise ValueError('The Email ID must be an NITK edu mail ID.')
+        eduMailID = self.normalize_email(eduMailID)
+        user = self.model(username=username.strip(), email=email, eduMailID=eduMailID, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, edu_email_id, password=None, **extra_fields):
+
+    def create_superuser(self, username, eduMailID, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -32,19 +34,19 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(username, edu_email_id, password, **extra_fields)
+        return self.create_user(eduMailID, "default@gmail.com", username, password, **extra_fields)
 
 class MyUser(AbstractUser):
     # email = models.EmailField(unique=True)  # Override the default email field to make it unique
-    edu_email_id = models.EmailField(unique=True)
-    phone_no = models.CharField(max_length=15, unique=True)
+    eduMailID = models.EmailField(unique=True)
+    phone_no = models.CharField(max_length=15)
 
     def __str__(self):
-        return self.edu_email_id
+        return self.eduMailID
 
     objects = CustomUserManager()
 
-    USERNAME_FIELD = 'edu_email_id'
+    USERNAME_FIELD = 'eduMailID'
     REQUIRED_FIELDS = ['username']
 
 # Student model

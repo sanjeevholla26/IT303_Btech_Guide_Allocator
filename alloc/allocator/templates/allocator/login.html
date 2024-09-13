@@ -16,12 +16,14 @@
     </div>
 {%endif %}
 <div class="reg-userform">
+    <h1>BTech Major Project Allocator</h1>
+    <h5>Login Here</h5>
     <form action="{% url 'login' %}" method="post" class="reg-userform-form">
         {% csrf_token %}
         <div class="form-group">
-            <label for="exampleInputEmail1">Username</label>
-                <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Username" name="username">
-            <small id="emailHelp" class="form-text text-muted">The Username must be unique</small>
+            <label for="exampleInputEmail1">NITK ID</label>
+                <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Username" name="nitkMailID">
+            <small id="emailHelp" class="form-text text-muted">The NITK ID must be unique</small>
         </div>
 
         <div class="form-group">
@@ -29,9 +31,43 @@
             <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Login</button>
+        <p>Don't have an account? <a href="/register"><strong>REGISTER</strong></a> here.</p>
 
 </div>
 </div>
+<style>
+    .reg-userform {
+        background: white;
+        padding: 3%;
+        max-width: 1100px;
+        margin: auto;
+        border-radius: 0;
+        filter: none;
+    }
 
+    .reg-userform>h1 {
+        font-weight: bolder;
+        letter-spacing: 1.5px;
+        border-bottom: solid;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .reg-userform>h5 {
+        font-weight: bolder;
+        margin-left: 2%;
+    }
+
+    .reg-userform-form {
+        max-width: 600px;
+        margin-left: 2%;
+        margin-top: 2rem;
+    }
+
+    p {
+        margin-left: 3%;
+        margin-top: 1rem;
+    }
+</style>
 {% endblock %}
