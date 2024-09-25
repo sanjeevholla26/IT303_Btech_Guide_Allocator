@@ -8,10 +8,8 @@
 {%block title%} registration {%endblock%}
 
 {% block body %}
-    <div>
-        <h1>IT Dept BTECH Guide allocator</h1>
-        <p>NITK Mail ID : {{request.user.eduMailID}}</p>
-        <p>Username : {{request.user.username}}</p>
-    </div>
-    <a href="../logout"><i>End the suffering by logging out.</i></a>
+    <form action="{% url 'create_cluster' id=event.id %}" method="post" class="reg-userform-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Create Cluster</button>
+    </form>
 {% endblock %}

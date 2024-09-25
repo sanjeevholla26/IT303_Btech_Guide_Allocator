@@ -49,9 +49,66 @@ class MyUser(AbstractUser):
     USERNAME_FIELD = 'eduMailID'
     REQUIRED_FIELDS = ['username']
 
-# Student model
+    def has_permission(self, fun, app):
+        roles = self.roles.all()
+        all_actions = {}
+
+        for role in roles:
+            for perm in role.permissions.all():
+                app_name = perm.app_name
+                actions = perm.actions.split(',')
+
+                if app_name in all_actions:
+                    all_actions[app_name].extend(actions)
+                else:
+                    all_actions[app_name] = actions
+
+        for app_name in all_actions:
+            all_actions[app_name] = list(set(all_actions[app_name]))
+        if not app in all_actions or not fun in all_actions[app] :
+            return False
+
+        return True
+
+
+
+class Role(models.Model):
+    role_name = models.CharField(max_length=100)
+    users = models.ManyToManyField(MyUser, blank=True, related_name='roles')
+
+    def __str__(self):
+        return self.role_name
+
+    @staticmethod
+    def get_all_permissions(user):
+        roles = user.roles.all()  # Fetch all roles related to the user
+        all_actions = {}  # Dictionary to hold app_name and actions
+
+        for role in roles:
+            for perm in role.permissions.all():  # Iterate through the permissions of each role
+                app_name = perm.app_name
+                actions = perm.actions.split(',')  # Split the actions by comma
+
+                # If app_name already exists, extend the list of actions
+                if app_name in all_actions:
+                    all_actions[app_name].extend(actions)
+                else:
+                    all_actions[app_name] = actions
+
+        # Optionally, remove duplicate actions
+        for app_name in all_actions:
+            all_actions[app_name] = list(set(all_actions[app_name]))
+
+        return all_actions
+
+
+class Permission(models.Model):
+    role = models.ManyToManyField(Role, blank=True, related_name='permissions')
+    actions = models.CharField(max_length=1000)  # List of actions as a comma-separated string
+    app_name = models.CharField(max_length=100)  # Application name
+
 class Student(models.Model):
-    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, primary_key=True, related_name="student")
     cgpa = models.DecimalField(max_digits=4, decimal_places=2)
     academic_year = models.IntegerField()  # e.g., 2024
     branch = models.CharField(max_length=100)
@@ -67,6 +124,8 @@ class Faculty(models.Model):
     def __str__(self):
         return self.abbreviation
 
+from django.utils import timezone
+
 # AllocationEvent model
 class AllocationEvent(models.Model):
     event_name = models.CharField(max_length=255)
@@ -80,6 +139,12 @@ class AllocationEvent(models.Model):
 
     def __str__(self):
         return self.event_name
+
+    @classmethod
+    def active_events(cls):
+        """Return all events that are currently active."""
+        now = timezone.now()
+        return cls.objects.filter(start_datetime__lte=now, end_datetime__gte=now)
 
 # ChoiceList model
 class ChoiceList(models.Model):

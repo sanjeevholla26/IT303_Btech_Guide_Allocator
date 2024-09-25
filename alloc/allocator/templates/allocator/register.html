@@ -1,10 +1,9 @@
-{% extends './layout.html' %}
+{% extends './login_layout.html' %}
 {% load static %}
 {% block head %}
 <meta charset="UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" type="text/css" href="../../static/reg.css" />
 {%endblock%}
 {%block title%} registration {%endblock%}
 
@@ -21,7 +20,7 @@
     <div class="alert alert-danger">{{ message }}</div>
     {% endif %}
     <h1>BTech Major Project Allocator</h1>
-    <h5>Register here</h5>
+    <h5>Add user here</h5>
     <form action="{% url 'register' %}" method="post" class="reg-userform-form">
         {% csrf_token %}
         <div class="form-group">
@@ -48,9 +47,8 @@
                 <input type="password" class="form-control" id="exampleInputPassword1" placeholder="confirm password" name="confirm_password" required>
         </div>
 
-        <button type="submit" class="btn btn-primary">Register</button>
+        <button type="submit" class="btn btn-primary">Add User</button>
     </form>
-    <p>Have an account already? <a href="../"><strong>LOGIN</strong></a> here.</p>
 </div>
 </div>
 

@@ -1,0 +1,39 @@
+{% extends './login_layout.html' %}
+{% load static %}
+{% block head %}
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{%endblock%}
+{%block title%} registration {%endblock%}
+
+{% block body %}
+    <div>
+        <form action="{% url 'add_event' %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <label for="name">Event Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="start_datetime">Start DateTime:</label>
+    <input type="datetime-local" id="start_datetime" name="start_datetime" required>
+
+    <label for="end_datetime">End DateTime:</label>
+    <input type="datetime-local" id="end_datetime" name="end_datetime" required>
+
+    <label for="batch">Eligible Batch:</label>
+    <input type="text" id="batch" name="batch" required>
+
+    <label for="branch">Eligible Branch:</label>
+    <input type="text" id="branch" name="branch" required>
+
+    <label for="faculties">Select Eligible Faculties:</label>
+    <select id="faculties" name="faculties" multiple required>
+        {% for faculty in faculties %}
+            <option value="{{faculty.user.id}}">{{ faculty.user }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Add Event</button>
+        </form>
+    </div>
+{% endblock %}
