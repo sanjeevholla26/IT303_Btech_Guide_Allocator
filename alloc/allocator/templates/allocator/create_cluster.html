@@ -21,11 +21,27 @@
         <h2>Cluster Assignment Summary</h2>
         {% for cluster_number, choices in clusters.items %}
             <h3>Cluster {{ cluster_number }} ({{ choices|length }} students)</h3>
-            <ul>
+            <table border="1">
+                <tr>
+                    <th>Student</th>
+                    <th>CGPA</th>
+                    <th>Allotted</th>
+                    <th>Processed Choices</th>
+                    <th>Current Choice</th>
+                    <th>Next Choices</th>
+                </tr>
                 {% for choice in choices %}
-                    <li>{{ choice.student.user.username }} - {{ choice.student.cgpa }}</li>
+                    <tr>
+                        <td>{{ choice.student.user.username }}</td>
+                        <td>{{ choice.student.cgpa }}</td>
+                        <td>{{ choice.allottedProf }}</td>
+                        <td>{{ choice.previousChoices }}</td>
+                        <td>{{ choice.currentChoice }}</td>
+                        <td>{{ choice.nextChoices }}</td>
+                    </tr>
+                    <!-- <li>{{ choice.student.user.username }} - {{ choice.student.cgpa }} : {{ choice.printChoiceList }}</li> -->
                 {% endfor %}
-            </ul>
+            </table>
         {% endfor %}
     {% endif %}
 {% endblock %}

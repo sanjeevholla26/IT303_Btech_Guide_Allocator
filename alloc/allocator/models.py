@@ -158,6 +158,35 @@ class ChoiceList(models.Model):
 
     def __str__(self):
         return f'{self.student.user.username} - {self.event.event_name}'
+    
+    def allottedProf(self):
+        if self.current_allocation:
+            return self.current_allocation.abbreviation
+        else:
+            return ""
+    
+    def printRange(self, lower, higher):
+        choiceList = ""
+        for i in range(lower, higher):
+            fac = Faculty.objects.get(user_id=int(self.preference_list[i]["facultyID"]))
+            if i!=lower :
+                choiceList = f"{choiceList},{fac.abbreviation}"
+            else:
+                choiceList = fac.abbreviation
+        return choiceList
+
+    def printChoiceList(self):
+        return self.printRange(0, len(self.preference_list))
+    
+    def previousChoices(self):      
+        return self.printRange(0, self.current_index-1)
+    
+    def currentChoice(self):      
+        return Faculty.objects.get(user_id=int(self.preference_list[self.current_index-1]["facultyID"])).abbreviation
+    
+    def nextChoices(self):      
+        return self.printRange(self.current_index, len(self.preference_list))
+
 
 # Clashes model
 class Clashes(models.Model):

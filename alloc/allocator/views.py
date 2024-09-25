@@ -133,7 +133,7 @@ def add_event(request):
         batch = request.POST.get("batch")
         branch = request.POST.get("branch")
         faculties = request.POST.getlist("faculties")  # Use getlist to retrieve multiple selected IDs
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",faculties)
+        # print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",faculties)
         # Create the new AllocationEvent instance
         new_event = AllocationEvent(
             owner=user,  # Set the owner to the current user
@@ -184,7 +184,7 @@ def event(request, id):
             preference_list = []
             for i in range(1, e.eligible_faculties.count() + 1):
                 faculty_id = request.POST.get(f'faculty_{i}')
-                print("########################", faculty_id)
+                # print("########################", faculty_id)
                 if faculty_id:
                     preference_list.append({"choiceNo": i, "facultyID": faculty_id})
             choice_list = ChoiceList.objects.create(
