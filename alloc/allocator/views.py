@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 # from django.contrib.auth.models import User, MyUser
-from .models import MyUser, Role, Student, Faculty, AllocationEvent, ChoiceList
+from .models import MyUser, Role, Student, Faculty, AllocationEvent, ChoiceList, Clashes
 from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
@@ -241,23 +241,78 @@ def create_cluster(request, id):
 def run_allocation(request, id):
     get_event = AllocationEvent.objects.get(id=id)
     if request.method == "POST":
-        total_profs = get_event.eligible_faculties.count()
+        prof_count = get_event.eligible_faculties.count()
         participating_profs = get_event.eligible_faculties
 
-        # Get the list of ChoiceList objects sorted by student CGPA in descending order
-        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa')
+        clashes = Clashes.objects.get(event=get_event)
 
-        for i, choice in enumerate(students_choice_list):
-            # Calculate the cluster number (integer division)
-            cluster_no = (i // total_profs) + 1
-            choice.cluster_number = cluster_no
-            choice.save()
+        for clusterID in range(0, get_event.cluster_count+1):
+
+            choice_lists = [s for s in get_event if s.cluster_number==clusterID]
+
+            unresolvedClashes = [c for c in clashes if not c.is_processed and c.clusterID == clusterID and not c.selected_students]
+            newlyResolvedClashes = [c for c in clashes if not c.is_processed and c.clusterID == clusterID and c.selected_students]
+
+            for c in newlyResolvedClashes:
+                for s in choice_lists:
+                    if s.student in c.list_of_students:
+                        if s.student == c.selected_student:
+                            s.current_allocation = c.faculty
+                        else:
+                            s.current_index += 1
+
+            profAllotted = {prof: [] for prof.user.id in participating_profs}
+            lastPrefTaken = prof_count + 1
+            allotted = 0
+            for choice in choice_lists:
+                if choice.current_allocation:
+                    profAllotted[choice.current_allocation.user.id].append(choice)
+                    allotted += 1
+                else:
+                    lastPrefTaken = min(lastPrefTaken, choice.current_index)
+
+            if unresolvedClashes:
+                continue
+            
+            if allotted == len(choice_lists):
+                continue
+
+            for current_pref in range(lastPrefTaken, prof_count):
+                tempProf = {prof: [] for prof.user.id in participating_profs}
+                clashes_occured = False
+                for choice in choice_lists:
+                    pref_prof = choice.preference_list[current_pref].facultyID
+                    if choice.current_allocation or len(profAllotted[pref_prof])!=0:
+                        continue
+                    tempProf[pref_prof].append(choice)
+                for prof, students in tempProf.items():
+                    if len(students) > 1:
+                        Clashes.objects.create(
+                        event = get_event,
+                        cluster_id = clusterID,
+                        faculty = Faculty.objects.get(id=prof),
+                        preference_id = current_pref,
+                        list_of_students = students,
+                        selected_student = None
+                    )
+                        clashes_occured=True
+                    elif len(students) == 1:
+                        students[0].current_allocation = prof
+                        profAllotted[prof].append(students[0])
+                        allotted += 1
+
+                if allotted == len(choice_lists):
+                    break
+
+                if clashes_occured:
+                    break
 
         return HttpResponseRedirect(reverse(admin_all_events))
     else:
         return render(request, "allocator/create_cluster.html", {
             "event" : get_event
         })
+
 
 @authorize_resource
 def admin_all_events(request):
