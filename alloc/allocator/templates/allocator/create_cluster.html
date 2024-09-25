@@ -40,9 +40,17 @@ Registration
         <tr>
             <td>{{ choice.student.user.username }}</td>
             <td>{{ choice.student.cgpa }}</td>
-            <td>{{ choice.allottedProf }}</td>
+            {% if choice.allottedProf %}
+                <td class="bg-success">{{ choice.allottedProf }}</td>
+            {% else %}
+                <td>{{ choice.allottedProf }}</td>
+            {% endif %}
             <td>{{ choice.previousChoices }}</td>
-            <td>{{ choice.currentChoice }}</td>
+            {% if choice.currentChoice %}
+                <td class="bg-warning">{{ choice.currentChoice }}</td>
+            {% else %}
+                <td>{{ choice.currentChoice }}</td>
+            {% endif %}
             <td>{{ choice.nextChoices }}</td>
         </tr>
         {% endfor %}

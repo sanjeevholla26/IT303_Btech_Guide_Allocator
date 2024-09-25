@@ -56,6 +56,9 @@
                 {% if request.user|has_permission:'admin_all_events,allocator' %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'admin_all_events' %}">All events</a></li>
                 {% endif %}
+                {% if request.user|has_permission:'show_all_clashes,allocator' %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'show_all_clashes' %}">All clashes</a></li>
+                {% endif %}
             </ul>
             <a class="nav-link" href="{% url 'logout' %}">
                 <i class="fas fa-sign-out-alt"></i> Logout
