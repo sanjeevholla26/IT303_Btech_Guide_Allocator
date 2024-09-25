@@ -223,8 +223,18 @@ def create_cluster(request, id):
 
         return HttpResponseRedirect(reverse(admin_all_events))
     else:
+        clusters = {}
+        students_choice_list = ChoiceList.objects.filter(event=get_event)
+        if get_event.cluster_count != 0:
+            students_choice_list = ChoiceList.objects.filter(event=get_event)
+            for choice in students_choice_list:
+                cluster_no = choice.cluster_number
+                if cluster_no not in clusters:
+                    clusters[cluster_no] = []
+                clusters[cluster_no].append(choice)
         return render(request, "allocator/create_cluster.html", {
-            "event" : get_event
+            "event" : get_event,
+            "clusters": clusters,
         })
 
 @authorize_resource
