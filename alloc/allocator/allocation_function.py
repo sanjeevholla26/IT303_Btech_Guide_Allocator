@@ -48,6 +48,7 @@ def allocate(id):
             clashes_occured = False
             for choice in choice_lists:
                 pref_prof = int(choice.preference_list[current_pref-1]["facultyID"])
+                print(profAllotted.keys())
                 if choice.current_allocation or len(profAllotted[pref_prof])!=0:
                     continue
                 tempProf[pref_prof].append(choice)

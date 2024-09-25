@@ -27,7 +27,6 @@ def authorize_resource(func):
         # Capture the app name from the module
         module_name = func.__module__  # This returns the full module path (e.g., 'allocator.views')
         app_name = module_name.split('.')[0]  # Extract the app name by splitting the module path
-
         all_actions = Role.get_all_permissions(request.user)
         if not app_name in all_actions or not action_name in all_actions[app_name]:
             return HttpResponseRedirect(reverse(home))
@@ -223,7 +222,8 @@ def create_cluster(request, id):
         get_event.cluster_count = max_cluster_num
         get_event.save()
 
-        return HttpResponseRedirect(reverse(admin_all_events))
+        # return HttpResponseRedirect(reverse(admin_all_events))
+        return HttpResponseRedirect(reverse(create_cluster, args=(id, )))
     else:
         clusters = {}
         students_choice_list = ChoiceList.objects.filter(event=get_event)
@@ -242,91 +242,33 @@ def create_cluster(request, id):
 @authorize_resource
 def run_allocation(request, id):
     if request.method == "POST":
-        # get_event = AllocationEvent.objects.get(id=id)
-        # prof_count = get_event.eligible_faculties.count()
-        # participating_profs = get_event.eligible_faculties.all()
-
-        # clashes = Clashes.objects.filter(event=get_event)
-        # student_pref_list = ChoiceList.objects.filter(event=get_event)
-
-        # for clusterID in range(1, get_event.cluster_count+1):
-        #     choice_lists = []
-        #     choice_lists = [s for s in student_pref_list if s.cluster_number==clusterID]
-
-        #     unresolvedClashes = [c for c in clashes if not c.is_processed and c.cluster_id == clusterID and not c.selected_student]
-        #     newlyResolvedClashes = [c for c in clashes if not c.is_processed and c.cluster_id == clusterID and c.selected_student]
-
-        #     for c in newlyResolvedClashes:
-        #         for s in choice_lists:
-        #             if s.student in c.list_of_students.all():
-        #                 if s.student == c.selected_student:
-        #                     s.current_allocation = c.faculty
-        #                     s.save()
-        #                 else:
-        #                     s.current_index += 1
-        #                     s.save()
-        #         c.is_processed = True
-        #         c.save()
-
-        #     profAllotted = {prof.user.id: [] for prof in participating_profs}
-        #     lastPrefTaken = prof_count + 1
-        #     allotted = 0
-        #     for choice in choice_lists:
-        #         if choice.current_allocation:
-        #             profAllotted[choice.current_allocation.user.id].append(choice)
-        #             allotted += 1
-        #         else:
-        #             lastPrefTaken = min(lastPrefTaken, choice.current_index)
-
-        #     if unresolvedClashes:
-        #         continue
-
-        #     if allotted == len(choice_lists)+1:
-        #         continue
-
-        #     for current_pref in range(lastPrefTaken, prof_count+1):
-        #         tempProf = {prof.user.id: [] for prof in participating_profs}
-        #         clashes_occured = False
-        #         for choice in choice_lists:
-        #             pref_prof = int(choice.preference_list[current_pref-1]["facultyID"])
-        #             if choice.current_allocation or len(profAllotted[pref_prof])!=0:
-        #                 continue
-        #             tempProf[pref_prof].append(choice)
-        #         for prof, students_choice in tempProf.items():
-        #             get_fac = MyUser.objects.get(id = int(prof))
-        #             if len(students_choice) > 1:
-        #                 new_clash = Clashes.objects.create(
-        #                 event = get_event,
-        #                 cluster_id = clusterID,
-        #                 faculty = Faculty.objects.get(user=get_fac),
-        #                 preference_id = current_pref,
-        #                 selected_student = None
-        #             )
-        #                 new_clash.list_of_students.set([c.student.user.id for c in students_choice])
-        #                 new_clash.save()
-        #                 clashes_occured=True
-        #             elif len(students_choice) == 1:
-        #                 students_choice[0].current_allocation = Faculty.objects.get(user=get_fac)
-        #                 students_choice[0].save()
-        #                 profAllotted[int(prof)].append(students_choice[0])
-        #                 allotted += 1
-
-        #         if allotted == len(choice_lists):
-        #             break
-
-        #         if clashes_occured:
-        #             break
         allocate(id)
-        return HttpResponseRedirect(reverse(run_allocation, args=(id, )))
+        return HttpResponseRedirect(reverse(create_cluster, args=(id, )))
     else:
         return HttpResponseRedirect(reverse(home))
 
+@authorize_resource
+def reset_allocation(request, id):
+    if request.method == "POST":
+        get_event = AllocationEvent.objects.get(id=id)
+        students_choice_list = ChoiceList.objects.filter(event=get_event)
+        for s in students_choice_list:
+            s.current_allocation = None
+            s.current_index = 1
+            s.save()
+        
+        clashes = Clashes.objects.filter(event=get_event)
+        for c in clashes:
+            c.is_processed = True
+            c.save()
+        return HttpResponseRedirect(reverse(create_cluster, args=(id, )))
+    else:
+        return HttpResponseRedirect(reverse(home))
 
 @authorize_resource
 def admin_all_events(request):
     if request.method == "GET":
         all_events = AllocationEvent.objects.all()
-
         return render(request, "allocator/admin_all_events.html", {
             "events" : all_events,
         })
@@ -350,10 +292,20 @@ def show_all_clashes(request):
 @authorize_resource
 def resolve_clash(request, id):
     clash = Clashes.objects.get(id=id)
+    students = clash.list_of_students.all()
+    
+    preferences = []
+
+    for s in students:
+        chList = ChoiceList.objects.get(event=clash.event, student=s).printChoiceList()
+        preferences.append([s.user.username, s.cgpa, chList])     
+
+    print(preferences)
 
     if request.method == "GET":
         return render(request, "allocator/clash.html", {
-            "clash": clash
+            "clash": clash,
+            "preferenceList": preferences
         })
     else:
         get_user_id = request.POST.get("student_id")

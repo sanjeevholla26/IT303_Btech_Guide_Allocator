@@ -15,7 +15,25 @@
         <form action="{% url 'resolve_clash' id=clash.id %}" method="post" class="reg-userform-form">
             {% csrf_token %}
             <div class="form-group col-md-4">
-                <label for="inputState">Select Student</label>
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>CGPA</th>
+                            <th>Preference List</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pref in preferenceList %}
+                        <tr>
+                            <td>{{ pref.0 }}</td>
+                            <td>{{ pref.1 }}</td>
+                            <td>{{ pref.2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <label for="inputState" class="form-label">Select Student</label>
                 <select id="inputState" class="form-control" name="student_id" style="overflow-y: scroll;">
                     <option selected>Choose a student</option>
                     {% for student in clash.list_of_students.all %}
@@ -25,44 +43,89 @@
                     {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Add Student</button>
+            <button type="submit" class="btn btn-primary btn-submit">Add Student</button>
         </form>
     </div>
 </div>
 
 <style>
-    .reg-userform {
-        background: white;
-        padding: 3%;
-        max-width: 1100px;
-        margin: auto;
-        border-radius: 0;
-        filter: none;
+    .reg-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f8f9fa;
     }
 
-    .reg-userform>h1 {
-        font-weight: bolder;
-        letter-spacing: 1.5px;
-        border-bottom: solid;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
+    .reg-userform {
+        background: white;
+        padding: 2rem;
+        max-width: 800px;
+        width: 100%;
+        margin: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .reg-userform>h5 {
-        font-weight: bolder;
-        margin-left: 2%;
+        font-weight: 600;
+        margin-bottom: 1rem;
     }
 
     .reg-userform-form {
-        max-width: 600px;
-        margin-left: 2%;
-        margin-top: 2rem;
+        margin-top: 1.5rem;
     }
 
-    p {
-        margin-left: 3%;
-        margin-top: 1rem;
+    .student-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        background-color: #f1f1f1;
+    }
+
+    .student-table th,
+    .student-table td {
+        padding: 10px 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    .student-table th {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+
+    .student-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        font-size: 1rem;
+    }
+
+    .btn-submit {
+        padding: 0.75rem 1.5rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background-color: #0056b3;
     }
 </style>
-
 {% endblock %}
