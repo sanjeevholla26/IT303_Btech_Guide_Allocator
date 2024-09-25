@@ -151,7 +151,7 @@ class AllocationEvent(models.Model):
 class ChoiceList(models.Model):
     event = models.ForeignKey(AllocationEvent, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    preference_list = models.JSONField()  # stores list of dictionaries e.g., [{"choiceNo": 1, "facultyAbbrv": "CS"}]
+    preference_list = models.JSONField()  # stores list of dictionaries e.g., [{"choiceNo": 1, "facultyID": "CS"}]
     current_allocation = models.ForeignKey(Faculty, null=True, blank=True, on_delete=models.SET_NULL, related_name='allocated_choices')
     current_index = models.IntegerField(default=1)
     cluster_number = models.IntegerField()

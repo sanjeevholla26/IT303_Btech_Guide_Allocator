@@ -13,4 +13,5 @@ urlpatterns = [
     path("event/<int:id>", views.event, name="event"),
     path("create_cluster/<int:id>", views.create_cluster, name="create_cluster"),
     path("admin_all_events/", views.admin_all_events, name="admin_all_events"),
+    path("run_allocation/<int:id>/", views.run_allocation, name="run_allocation"),
 ]
