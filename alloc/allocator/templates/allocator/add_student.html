@@ -5,38 +5,79 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {%endblock%}
-{%block title%} registration {%endblock%}
+
+{%block title%} Add Student {%endblock%}
 
 {% block body %}
-    <div>
+<div class="reg-container">
+    <div class="reg-userform">
+        <h1>BTech Major Project Allocator</h1>
+        <h5>Add Student Here</h5>
         <form action="{% url 'add_student' %}" method="post" class="reg-userform-form">
             {% csrf_token %}
             <div class="form-group col-md-4">
                 <label for="inputState">Select User</label>
                 <select id="inputState" class="form-control" name="user_id" style="overflow-y: scroll;">
-                  <option selected >Choose a User</option>
-                  {% for user in users %}
-                        <option value="{{user.id}}" style="display: 2rem;">
-                                <strong>{{user}}</strong>
-                        </option>
+                    <option selected>Choose a User</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}">
+                        <strong>{{ user }}</strong>
+                    </option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label for="username">CGPA</label>
-                <input type="text" class="form-control" id="username1" aria-describedby="emailHelp" placeholder="cgpa"
-                    name="cgpa" autocomplete="off" required>
+                <label for="username1">CGPA</label>
+                <input type="text" class="form-control" id="username1" placeholder="CGPA" name="cgpa" autocomplete="off"
+                    required>
             </div>
             <div class="form-group">
-            <label for="exampleInputPassword1">Branch</label>
-                <input type="text" class="form-control" id="exampleInputPassword1" placeholder="branch" name="branch" required>
+                <label for="branch">Branch</label>
+                <input type="text" class="form-control" id="branch" placeholder="Branch" name="branch" required>
             </div>
             <div class="form-group">
-                <label for="exampleInputPassword1">Academic Year</label>
-                    <input type="text" class="form-control" id="exampleInputPassword1" placeholder="year" name="aca_year" required>
+                <label for="aca_year">Academic Year</label>
+                <input type="text" class="form-control" id="aca_year" placeholder="Academic Year" name="aca_year"
+                    required>
             </div>
-
             <button type="submit" class="btn btn-primary">Add Student</button>
         </form>
     </div>
+</div>
+
+<style>
+    .reg-userform {
+        background: white;
+        padding: 3%;
+        max-width: 1100px;
+        margin: auto;
+        border-radius: 0;
+        filter: none;
+    }
+
+    .reg-userform>h1 {
+        font-weight: bolder;
+        letter-spacing: 1.5px;
+        border-bottom: solid;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .reg-userform>h5 {
+        font-weight: bolder;
+        margin-left: 2%;
+    }
+
+    .reg-userform-form {
+        max-width: 600px;
+        margin-left: 2%;
+        margin-top: 2rem;
+    }
+
+    p {
+        margin-left: 3%;
+        margin-top: 1rem;
+    }
+</style>
+
 {% endblock %}

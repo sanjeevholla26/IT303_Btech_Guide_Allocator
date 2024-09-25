@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {%endblock%}
-{%block title%} registration {%endblock%}
+{%block title%} All Events {%endblock%}
 
 {% block body %}
     <div>
@@ -26,9 +26,8 @@
                     <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{event.event_name}}</strong></td>
                     <td>{{event.start_datetime}} L</td>
                     <td>{{event.end_datetime}}</td>
-                    <td><a href="{% url 'event' id=event.id %}">
-                        Form</a>
-                     </td>
+                    <td><a href="{% url 'event' id=event.id %}"><button class="btn btn-success">Form
+                    </button></a></td>
                 </tr>
             {% endfor %}
             </tbody>
