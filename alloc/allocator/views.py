@@ -277,18 +277,16 @@ def run_allocation(request, id):
                     lastPrefTaken = min(lastPrefTaken, choice.current_index)
 
             if unresolvedClashes:
-                print("@@@@@@@@@@@@@@@@@@@@@@@@@@")
                 continue
 
             if allotted == len(choice_lists)+1:
-                print("@@@@@@@@@@@@@@@@@@@@@@@@@@")
                 continue
 
-            for current_pref in range(lastPrefTaken, prof_count):
+            for current_pref in range(lastPrefTaken, prof_count+1):
                 tempProf = {prof.user.id: [] for prof in participating_profs}
                 clashes_occured = False
                 for choice in choice_lists:
-                    pref_prof = int(choice.preference_list[current_pref]["facultyID"])
+                    pref_prof = int(choice.preference_list[current_pref-1]["facultyID"])
                     if choice.current_allocation or len(profAllotted[pref_prof])!=0:
                         continue
                     tempProf[pref_prof].append(choice)
@@ -302,10 +300,7 @@ def run_allocation(request, id):
                         preference_id = current_pref,
                         selected_student = None
                     )
-                        stu = []
-                        for choice in students_choice:
-                            stu.append(choice.student.user.id)
-                        new_clash.list_of_students.set(stu)
+                        new_clash.list_of_students.set([c.student.user.id for c in students_choice])
                         new_clash.save()
                         clashes_occured=True
                     elif len(students_choice) == 1:
