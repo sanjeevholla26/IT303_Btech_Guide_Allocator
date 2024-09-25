@@ -209,6 +209,34 @@ def create_cluster(request, id):
         # Get the list of ChoiceList objects sorted by student CGPA in descending order
         students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa')
 
+        max_cluster_num = 0
+
+        for i, choice in enumerate(students_choice_list):
+            # Calculate the cluster number (integer division)
+            cluster_no = (i // total_profs) + 1
+            max_cluster_num = max(max_cluster_num, cluster_no)
+            choice.cluster_number = cluster_no
+            choice.save()
+
+        get_event.cluster_count = max_cluster_num
+        get_event.save()
+
+        return HttpResponseRedirect(reverse(admin_all_events))
+    else:
+        return render(request, "allocator/create_cluster.html", {
+            "event" : get_event
+        })
+
+@authorize_resource
+def run_allocation(request, id):
+    get_event = AllocationEvent.objects.get(id=id)
+    if request.method == "POST":
+        total_profs = get_event.eligible_faculties.count()
+        participating_profs = get_event.eligible_faculties
+
+        # Get the list of ChoiceList objects sorted by student CGPA in descending order
+        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa')
+
         for i, choice in enumerate(students_choice_list):
             # Calculate the cluster number (integer division)
             cluster_no = (i // total_profs) + 1

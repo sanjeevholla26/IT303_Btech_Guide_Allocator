@@ -136,6 +136,7 @@ class AllocationEvent(models.Model):
     eligible_batch = models.CharField(max_length=255)  # e.g., "2026"
     eligible_branch = models.CharField(max_length=255)  # e.g., "IT,AI"
     eligible_faculties = models.ManyToManyField(Faculty, related_name='eligible_faculty_events')
+    cluster_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.event_name
