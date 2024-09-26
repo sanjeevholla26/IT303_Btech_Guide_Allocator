@@ -16,6 +16,7 @@ import traceback
 import functools
 import traceback
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
 
 from .allocation_function import allocate
 
@@ -210,6 +211,31 @@ def add_event(request):
         return render(request, "allocator/add_event.html", {
             "faculties": all_users
         })
+
+def edit_event(request, id):
+    event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
+    if request.method == 'POST':
+        # Handle form submission
+        event.event_name = request.POST.get('name')
+        event.start_datetime = request.POST.get('start_datetime')
+        event.end_datetime = request.POST.get('end_datetime')
+        event.eligible_batch = request.POST.get('batch')
+        event.eligible_branch = request.POST.get('branch')
+        faculty_ids = request.POST.getlist('faculties')
+        event.eligible_faculties.set(faculty_ids)
+        
+        event.save()
+        return redirect('home')  # Redirect to a success page or home
+    else:
+        # For GET request, render the form with existing values
+        faculties = Faculty.objects.all()  # Retrieve all faculties
+        return render(request, 'allocator/edit_event.html', {
+            'event': event,
+            'faculties': faculties
+        })
+
+
+
 
 @authorize_resource
 def all_events(request):

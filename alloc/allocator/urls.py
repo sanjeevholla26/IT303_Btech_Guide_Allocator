@@ -13,6 +13,7 @@ urlpatterns = [
     path("add_permissions/", views.add_permissions, name="add_permissions"),
     path("events/", views.all_events, name="events"),
     path("event/<int:id>", views.event, name="event"),
+    path('edit_event/<int:id>/', views.edit_event, name='edit_event'),
     path("create_cluster/<int:id>", views.create_cluster, name="create_cluster"),
     path("admin_all_events/", views.admin_all_events, name="admin_all_events"),
     path("run_allocation/<int:id>/", views.run_allocation, name="run_allocation"),
