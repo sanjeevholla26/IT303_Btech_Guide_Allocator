@@ -22,14 +22,13 @@ Event Control
         {% csrf_token %}
         <button type="submit" class="btn btn-primary">Run Allocation</button>
     </form>
-    <form action="{% url 'run_allocation' id=event.id %}" method="post" class="reg-userform-form"></form>
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Run Allocation</button>
-    </form>
-
-    <form action="{% url 'generate_pdf' %}" method="post" class="reg-userform-form">
+    <form action="{% url 'generate_pdf' id=event.id %}" method="post" class="reg-userform-form">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary">Generate and send reports</button>
+    </form>
+    <form action="{% url 'reset_allocation' id=event.id %}" method="post" class="reg-userform-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Reset Allocation</button>
     </form>
 
     <h2>Cluster Assignment Summary</h2>

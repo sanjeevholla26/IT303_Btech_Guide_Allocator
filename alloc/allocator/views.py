@@ -374,11 +374,14 @@ def resolve_clash(request, id):
         return HttpResponseRedirect(reverse(show_all_clashes))
     
 @authorize_resource
-def generate_pdf(request):
+def generate_pdf(request, id):
     # Fetch all students from the database
     allocations = ChoiceList.objects.all()
 
     for allocation in allocations:
+        if allocation.event.id != id:
+            continue
+
         # Create a PDF in memory
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -445,7 +448,7 @@ def generate_pdf(request):
 
     # Return a response to confirm that emails have been sent
 
-    return{
-        messages.success(request, "Allocation reports have been sent successfully to all students."),
-        HttpResponseRedirect(reverse(create_cluster, args=(id, )))
-    }
+    
+    messages.success(request, "Allocation reports have been sent successfully to all students."),
+    return HttpResponseRedirect(reverse(create_cluster, args=(id,)))
+    
