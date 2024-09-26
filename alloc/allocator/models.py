@@ -3,6 +3,7 @@ from django.db import models
 from enum import Enum
 from django.utils.timezone import now
 
+
 # Enum for event status choices
 class EventStatus(Enum):
     OPEN = 'open'

@@ -65,6 +65,12 @@
                 {% endif %}
                 {% if request.user|has_permission:'admin_show_clash,allocator' %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'admin_show_clash' %}">All clashes</a></li>
+                {% if request.user|has_permission:'eligible_events,allocator' %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'eligible_events' %}">Faculty Dashboard</a></li>
+                {% endif %}
+                {% if request.user|has_permission:'add_permissions,allocator' %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'add_permissions' %}">Add a new Permission</a></li>
+
                 {% endif %}
             </ul>
             <a class="nav-link" href="{% url 'logout' %}">
