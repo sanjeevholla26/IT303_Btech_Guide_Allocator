@@ -18,4 +18,5 @@ urlpatterns = [
     path("reset_allocation/<int:id>/", views.reset_allocation, name="reset_allocation"),    
     path("show_all_clashes/", views.show_all_clashes, name="show_all_clashes"),
     path("resolve_clash/<int:id>", views.resolve_clash, name="resolve_clash"),
+    path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
 ]
