@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 # from django.contrib.auth.models import User, MyUser
-from .models import MyUser, Role, Student, Faculty, AllocationEvent, ChoiceList, Clashes
+from .models import MyUser, Role, Student, Faculty, AllocationEvent, ChoiceList, Clashes, Permission
 from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
@@ -16,6 +16,9 @@ import traceback
 import functools
 import traceback
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from django.shortcuts import get_object_or_404
 from io import BytesIO
 from django.core.mail import EmailMessage
 from reportlab.lib.pagesizes import A4
@@ -27,6 +30,10 @@ from reportlab.lib import colors
 from datetime import datetime
 
 from .allocation_function import allocate
+
+from datetime import timedelta
+
+CLASH_TIMEOUT = timedelta(days=3)
 
 def authorize_resource(func):
     @functools.wraps(func)
@@ -96,7 +103,12 @@ def login_view(request) :
 
             if user is not None :
                 login(request, user)
-                return HttpResponseRedirect(reverse(home))
+                next_url = request.POST.get('next')
+                return HttpResponseRedirect(next_url if next_url else reverse('home'))
+                # if(next_url==''):
+                #     return HttpResponseRedirect(reverse(home))
+                # else:
+                #     return HttpResponseRedirect(next_url)
             else :
                 return render(request, "allocator/login.html", {
                     "message" : "Invalid username and/or password."
@@ -167,6 +179,27 @@ def add_faculty(request):
         })
 
 @authorize_resource
+def add_permissions(request):
+    if request.method == "POST":
+        new_permissions = request.POST["permissions"]
+        app_name = request.POST["app_name"]
+        roles_list = request.POST.getlist("roles_list") 
+
+
+        new_perms = Permission(actions=new_permissions, app_name=app_name)
+        new_perms.save()
+
+        new_perms.role.set(roles_list)
+
+        return HttpResponseRedirect(reverse(home))
+
+    else:
+        all_roles = Role.objects.all()
+        return render(request, "allocator/add_permissions.html", {
+            "roles": all_roles
+        })
+
+@authorize_resource
 def add_event(request):
     if request.method == "POST":
         user = request.user
@@ -198,6 +231,31 @@ def add_event(request):
         return render(request, "allocator/add_event.html", {
             "faculties": all_users
         })
+
+def edit_event(request, id):
+    event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
+    if request.method == 'POST':
+        # Handle form submission
+        event.event_name = request.POST.get('name')
+        event.start_datetime = request.POST.get('start_datetime')
+        event.end_datetime = request.POST.get('end_datetime')
+        event.eligible_batch = request.POST.get('batch')
+        event.eligible_branch = request.POST.get('branch')
+        faculty_ids = request.POST.getlist('faculties')
+        event.eligible_faculties.set(faculty_ids)
+        
+        event.save()
+        return redirect('home')  # Redirect to a success page or home
+    else:
+        # For GET request, render the form with existing values
+        faculties = Faculty.objects.all()  # Retrieve all faculties
+        return render(request, 'allocator/edit_event.html', {
+            'event': event,
+            'faculties': faculties
+        })
+
+
+
 
 @authorize_resource
 def all_events(request):
@@ -347,6 +405,7 @@ def show_all_clashes(request):
     else:
         return HttpResponseRedirect(reverse(home))
 
+@login_required
 @authorize_resource
 def resolve_clash(request, id):
     clash = Clashes.objects.get(id=id)
@@ -372,6 +431,61 @@ def resolve_clash(request, id):
         clash.save()
         allocate(clash.event.id)
         return HttpResponseRedirect(reverse(show_all_clashes))
+
+@authorize_resource
+def admin_show_clash(request):
+    if request.method == "GET":
+         # Assuming CLASH_TIMEOUT is a timedelta object
+        timeout_limit = now() - CLASH_TIMEOUT
+
+        # Filter clashes that are unprocessed and created more than CLASH_TIMEOUT ago
+        all_clashes = Clashes.objects.filter(selected_student=None, is_processed=False, created_datetime__lte=timeout_limit)
+
+        return render(request, "allocator/admin_show_clash.html", {
+            "clashes": all_clashes
+        })
+
+    else:
+        return HttpResponseRedirect(reverse(home))
+
+@authorize_resource
+def admin_resolve_clash(request, id):
+    clash = Clashes.objects.get(id=id)
+    students = clash.list_of_students.all()
+
+    selected_student = students.order_by('-cgpa').first()
+
+    clash.selected_student = selected_student
+    clash.save()
+    allocate(clash.event.id)
+    return HttpResponseRedirect(reverse(admin_show_clash))
+
+def eligible_events(request):
+    if request.method == "GET":
+        fac = Faculty.objects.get(user=request.user)
+        get_eligible_events = fac.eligible_faculty_events.all()
+
+        return render(request, "allocator/eligible_events.html", {
+            "eligible_events": get_eligible_events
+        })
+    else:
+        messages.error(request, "Invalid request method")
+        return HttpResponseRedirect(reverse(home))
+
+@authorize_resource
+def event_results(request, id):
+    if request.method == "GET":
+        event = AllocationEvent.objects.get(id=id)
+        get_fac = Faculty.objects.get(user=request.user)
+        allocated_choices = get_fac.allocated_choices.filter(event=event)
+
+        return render(request, "allocator/event_result.html", {
+            "allocated_choices": allocated_choices
+        })
+    else:
+        messages.error(request, "Invalid request method")
+        return HttpResponseRedirect(reverse(home))
+
     
 @authorize_resource
 def generate_pdf(request, id):

@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from enum import Enum
+from django.utils.timezone import now
+
 
 # Enum for event status choices
 class EventStatus(Enum):
@@ -34,7 +36,13 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(eduMailID, "default@gmail.com", username, password, **extra_fields)
+        created_user = self.create_user(eduMailID, "default@gmail.com", username, password, **extra_fields)
+
+        admin_role, created = Role.objects.get_or_create(role_name="admin")
+        admin_role.users.add(created_user)
+        admin_role.save()
+
+        return created_user
 
 class MyUser(AbstractUser):
     # email = models.EmailField(unique=True)  # Override the default email field to make it unique
@@ -69,7 +77,6 @@ class MyUser(AbstractUser):
             return False
 
         return True
-
 
 
 class Role(models.Model):
@@ -196,6 +203,7 @@ class Clashes(models.Model):
     preference_id = models.IntegerField()
     list_of_students = models.ManyToManyField('Student', related_name='clashing_students')  # A many-to-many relationship with the Student model
     selected_student = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL)
+    created_datetime = models.DateTimeField(default=now)
     is_processed = models.BooleanField(default=False)
 
     def __str__(self):

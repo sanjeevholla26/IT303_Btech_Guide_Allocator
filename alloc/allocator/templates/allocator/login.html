@@ -29,9 +29,10 @@
         <label for="exampleInputPassword1">Password</label>
             <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
         </div>
-
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
         <button type="submit" class="btn btn-primary">Login</button>
         <p>Don't have an account? <a href="/register"><strong>REGISTER</strong></a> here.</p>
+    </form>
 
 </div>
 </div>
