@@ -4,7 +4,8 @@
 
 <head>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'index.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'ultimateFavicon.png' %}">
+    <!-- <link rel="stylesheet" type="text/css" href="{% static 'index.css' %}"> -->
     {% block head %}{% endblock %}
     <title>{% block title %} {% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -46,6 +47,9 @@
                 {% endif %}
                 {% if request.user|has_permission:'add_student,allocator' %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'add_student' %}">Add a new Student</a></li>
+                {% endif %}
+                {% if request.user|has_permission:'add_faculty,allocator' %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'add_faculty' %}">Add a new Faculty</a></li>
                 {% endif %}
                 {% if request.user|has_permission:'add_event,allocator' %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'add_event' %}">Generate a New event</a></li>

@@ -130,6 +130,28 @@ def add_student(request):
         })
 
 @authorize_resource
+def add_faculty(request):
+    if request.method == "POST":
+        user_id = request.POST["user_id"]
+        user = MyUser.objects.get(id=user_id)
+        abbreviation = request.POST["abbreviation"]
+
+        new_faculty = Faculty(
+            user = user,
+            abbreviation = abbreviation
+        )
+
+        new_faculty.save()
+
+        return HttpResponseRedirect(reverse(home))
+
+    else:
+        all_users = MyUser.objects.all()
+        return render(request, "allocator/add_faculty.html", {
+            "users": all_users
+        })
+
+@authorize_resource
 def add_event(request):
     if request.method == "POST":
         user = request.user
@@ -223,7 +245,7 @@ def create_cluster(request, id):
         total_profs = get_event.eligible_faculties.count()
 
         # Get the list of ChoiceList objects sorted by student CGPA in descending order
-        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa')
+        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa', '-student__user__username')
 
         max_cluster_num = 0
 

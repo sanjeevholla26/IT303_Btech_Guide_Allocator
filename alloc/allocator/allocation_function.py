@@ -45,10 +45,9 @@ def allocate(id):
 
         for current_pref in range(lastPrefTaken, prof_count+1):
             tempProf = {prof.user.id: [] for prof in participating_profs}
-            clashes_occured = False
+            clashes_occured = []
             for choice in choice_lists:
                 pref_prof = int(choice.preference_list[current_pref-1]["facultyID"])
-                print(profAllotted.keys())
                 if choice.current_allocation or len(profAllotted[pref_prof])!=0:
                     continue
                 tempProf[pref_prof].append(choice)
@@ -64,7 +63,7 @@ def allocate(id):
                 )
                     new_clash.list_of_students.set([c.student.user.id for c in students_choice])
                     new_clash.save()
-                    clashes_occured=True
+                    clashes_occured.append(new_clash)
                 elif len(students_choice) == 1:
                     students_choice[0].current_allocation = Faculty.objects.get(user=get_fac)
                     students_choice[0].save()
@@ -74,7 +73,10 @@ def allocate(id):
             if allotted == len(choice_lists):
                 break
 
-            if clashes_occured:
+            if len(clashes_occured)>0:
+                prof_clash_handler(clashes_occured)
                 break
 
-
+def prof_clash_handler(clashes):
+    for c in clashes:
+        print(f"Sending a mail to {c.faculty}.")
