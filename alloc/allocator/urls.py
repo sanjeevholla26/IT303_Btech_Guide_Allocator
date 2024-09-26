@@ -10,6 +10,7 @@ urlpatterns = [
     path("add_student/", views.add_student, name="add_student"),
     path("add_event/", views.add_event, name="add_event"),
     path("add_faculty/", views.add_faculty, name="add_faculty"),
+    path("add_permissions/", views.add_permissions, name="add_permissions"),
     path("events/", views.all_events, name="events"),
     path("event/<int:id>", views.event, name="event"),
     path("create_cluster/<int:id>", views.create_cluster, name="create_cluster"),
