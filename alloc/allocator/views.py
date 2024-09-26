@@ -118,8 +118,11 @@ def add_student(request):
             academic_year = academic_year,
             branch = branch
         )
-
         new_student.save()
+
+        student_role, created = Role.objects.get_or_create(role_name="student")
+        student_role.users.add(user)
+        student_role.save()
 
         return HttpResponseRedirect(reverse(home))
 
@@ -140,8 +143,11 @@ def add_faculty(request):
             user = user,
             abbreviation = abbreviation
         )
-
         new_faculty.save()
+
+        faculty_role, created = Role.objects.get_or_create(role_name="faculty")
+        faculty_role.users.add(user)
+        faculty_role.save()
 
         return HttpResponseRedirect(reverse(home))
 
@@ -317,7 +323,7 @@ def admin_all_events(request):
 def show_all_clashes(request):
     if request.method == "GET":
         get_fac = Faculty.objects.get(user=request.user)
-        all_clashes = Clashes.objects.filter(faculty=get_fac, selected_student=None)
+        all_clashes = Clashes.objects.filter(faculty=get_fac, selected_student=None, is_processed=False)
 
         return render(request, "allocator/all_clashes.html", {
             "clashes": all_clashes
