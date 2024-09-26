@@ -216,16 +216,22 @@ def event(request, id):
     else:
         if request.method == "POST":
             preference_list = []
+            curr_student = Student.objects.get(user=request.user)
             for i in range(1, e.eligible_faculties.count() + 1):
                 faculty_id = request.POST.get(f'faculty_{i}')
                 if faculty_id:
                     preference_list.append({"choiceNo": i, "facultyID": faculty_id})
-            choice_list = ChoiceList.objects.create(
-                event=e,
-                student=request.user.student,
-                preference_list=preference_list,
-                cluster_number=1  # Set this based on your logic
-            )
+            try:
+                get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
+                get_prev_choice.preference_list = preference_list
+                get_prev_choice.save()
+            except ChoiceList.DoesNotExist:
+                choice_list = ChoiceList.objects.create(
+                    event=e,
+                    student=request.user.student,
+                    preference_list=preference_list,
+                    cluster_number=1  # Set this based on your logic
+                )
 
             return HttpResponseRedirect(reverse(all_events))
         else:
