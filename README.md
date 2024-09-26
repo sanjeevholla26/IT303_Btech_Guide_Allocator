@@ -3,12 +3,15 @@
 ## Permissions 
 
 1. Roles - admin
+   
    actions - login,home,register,add_student,add_event,admin_all_events,create_cluster,run_allocation,reset_allocation
 
-2. Roles - Student
+3. Roles - Student
+   
    actions - all_events,event
 
-3. Roles - Faculty
+5. Roles - Faculty
+   
    actions - show_all_clashes,resolve_clash
 
 app name - allocator (common for all)
