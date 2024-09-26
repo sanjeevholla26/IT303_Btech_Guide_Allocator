@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from enum import Enum
-from django.utils import timezone
+from django.utils.timezone import now
 
 
 # Enum for event status choices
@@ -203,7 +203,7 @@ class Clashes(models.Model):
     preference_id = models.IntegerField()
     list_of_students = models.ManyToManyField('Student', related_name='clashing_students')  # A many-to-many relationship with the Student model
     selected_student = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL)
-    created_datetime = models.DateTimeField(default=timezone.now())
+    created_datetime = models.DateTimeField(default=now)
     is_processed = models.BooleanField(default=False)
 
     def __str__(self):
