@@ -93,5 +93,5 @@ def prof_clash_handler(clashes):
         for s in students:
             chList = ChoiceList.objects.get(event=c.event, student=s).printChoiceList()
             preferences.append([s.user.username, s.cgpa, chList])
-        send_mail_page("nandanramesh.221it045@nitk.edu.in", "Clash", email_message(preferences, c.id))
+        send_mail_page("sudeepym.221it068@nitk.edu.in", "Clash", email_message(preferences, c.id))
         # send_mail_page(c.faculty.user.eduMailID, "Clash", email_message(preferences))
