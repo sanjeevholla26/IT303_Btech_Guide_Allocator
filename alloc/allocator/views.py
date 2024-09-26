@@ -363,3 +363,30 @@ def resolve_clash(request, id):
         clash.save()
         allocate(clash.event.id)
         return HttpResponseRedirect(reverse(show_all_clashes))
+
+@authorize_resource
+def eligible_events(request):
+    if request.method == "GET":
+        fac = Faculty.objects.get(user=request.user)
+        get_eligible_events = fac.eligible_faculty_events.all()
+
+        return render(request, "allocator/eligible_events.html", {
+            "eligible_events": get_eligible_events
+        })
+    else:
+        messages.error(request, "Invalid request method")
+        return HttpResponseRedirect(reverse(home))
+
+@authorize_resource
+def event_results(request, id):
+    if request.method == "GET":
+        event = AllocationEvent.objects.get(id=id)
+        get_fac = Faculty.objects.get(user=request.user)
+        allocated_choices = get_fac.allocated_choices.filter(event=event)
+
+        return render(request, "allocator/event_result.html", {
+            "allocated_choices": allocated_choices
+        })
+    else:
+        messages.error(request, "Invalid request method")
+        return HttpResponseRedirect(reverse(home))
