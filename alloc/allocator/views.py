@@ -337,8 +337,6 @@ def resolve_clash(request, id):
         chList = ChoiceList.objects.get(event=clash.event, student=s).printChoiceList()
         preferences.append([s.user.username, s.cgpa, chList])
 
-    print(preferences)
-
     if request.method == "GET":
         return render(request, "allocator/clash.html", {
             "clash": clash,
