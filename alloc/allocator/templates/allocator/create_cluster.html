@@ -10,57 +10,97 @@ Registration
 {% endblock %}
 
 {% block body %}
-{% if event.cluster_count == 0 %}
-<form action="{% url 'create_cluster' id=event.id %}" method="post" class="reg-userform-form">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Create Cluster</button>
-</form>
-{% else %}
-<form action="{% url 'run_allocation' id=event.id %}" method="post" class="reg-userform-form">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Run Allocation</button>
-</form>
+<div class="reg-userform">
+    <h1>Run allocation:</h1>
+    {% if event.cluster_count == 0 %}
+    <form action="{% url 'create_cluster' id=event.id %}" method="post" class="reg-userform-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Create Cluster</button>
+    </form>
+    {% else %}
+    <form action="{% url 'run_allocation' id=event.id %}" method="post" class="reg-userform-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Run Allocation</button>
+    </form>
 
-<form action="{% url 'reset_allocation' id=event.id %}" method="post" class="reg-userform-form">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Reset Allocation</button>
-</form>
+    <form action="{% url 'reset_allocation' id=event.id %}" method="post" class="reg-userform-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Reset Allocation</button>
+    </form>
 
-<h2>Cluster Assignment Summary</h2>
-{% for cluster_number, choices in clusters.items %}
-<h3>Cluster {{ cluster_number }} ({{ choices|length }} students)</h3>
-<table border="1" class="table table-striped">
-    <thead>
-        <tr>
-            <th>Student</th>
-            <th>CGPA</th>
-            <th>Allotted Professor</th>
-            <th>Processed Choices</th>
-            <th>Current Choice</th>
-            <th>Next Choices</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for choice in choices %}
-        <tr>
-            <td>{{ choice.student.user.username }}</td>
-            <td>{{ choice.student.cgpa }}</td>
-            {% if choice.allottedProf %}
-                <td class="bg-success">{{ choice.allottedProf }}</td>
-            {% else %}
-                <td>{{ choice.allottedProf }}</td>
-            {% endif %}
-            <td>{{ choice.previousChoices }}</td>
-            {% if choice.currentChoice %}
-                <td class="bg-warning">{{ choice.currentChoice }}</td>
-            {% else %}
-                <td>{{ choice.currentChoice }}</td>
-            {% endif %}
-            <td>{{ choice.nextChoices }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endfor %}
-{% endif %}
+    <h2>Cluster Assignment Summary</h2>
+    {% for cluster_number, choices in clusters.items %}
+    <h3>Cluster {{ cluster_number }} ({{ choices|length }} students)</h3>
+    <table border="1" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>CGPA</th>
+                <th>Allotted Professor</th>
+                <th>Processed Choices</th>
+                <th>Current Choice</th>
+                <th>Next Choices</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for choice in choices %}
+            <tr>
+                <td>{{ choice.student.user.username }}</td>
+                <td>{{ choice.student.cgpa }}</td>
+                {% if choice.allottedProf %}
+                    <td class="bg-success">{{ choice.allottedProf }}</td>
+                {% else %}
+                    <td>{{ choice.allottedProf }}</td>
+                {% endif %}
+                <td>{{ choice.previousChoices }}</td>
+                {% if choice.currentChoice %}
+                    <td class="bg-warning">{{ choice.currentChoice }}</td>
+                {% else %}
+                    <td>{{ choice.currentChoice }}</td>
+                {% endif %}
+                <td>{{ choice.nextChoices }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+    {% endif %}
+</div>
+<style>
+    form{
+        margin-bottom: 10px;
+    }
+.reg-userform {
+    background: white;
+    padding: 3%;
+    max-width: 1100px;
+    margin: auto;
+    border-radius: 0;
+    filter: none;
+}
+
+.reg-userform>h1 {
+    font-weight: bolder;
+    letter-spacing: 1.5px;
+    border-bottom: solid;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.reg-userform>h5 {
+    font-weight: bolder;
+    margin-left: 2%;
+}
+
+.reg-userform-form {
+    max-width: 600px;
+    margin-left: 2%;
+    margin-top: 2rem;
+}
+
+p {
+    margin-left: 3%;
+    margin-top: 1rem;
+}
+</style>
 {% endblock %}

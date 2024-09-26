@@ -15,12 +15,16 @@ from django.contrib.auth import login
 import traceback
 import functools
 import traceback
+from django.contrib import messages
 
 from .allocation_function import allocate
 
 def authorize_resource(func):
     @functools.wraps(func)
     def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, "You need to log in to access this page.")
+            return HttpResponseRedirect(reverse(login_view))
         # Capture the name of the action (function name)
         action_name = func.__name__
 
@@ -29,6 +33,7 @@ def authorize_resource(func):
         app_name = module_name.split('.')[0]  # Extract the app name by splitting the module path
         all_actions = Role.get_all_permissions(request.user)
         if not app_name in all_actions or not action_name in all_actions[app_name]:
+            messages.error(request, "You do not have permission to access this page.")
             return HttpResponseRedirect(reverse(home))
         # Call the original function
         return func(request, *args, **kwargs)
@@ -37,7 +42,7 @@ def authorize_resource(func):
 
 def home(request) :
     if not request.user.is_authenticated :
-        return HttpResponseRedirect(reverse(login))
+        return HttpResponseRedirect(reverse(login_view))
     else :
         return render(request, "allocator/home.html")
 
@@ -185,7 +190,6 @@ def event(request, id):
             preference_list = []
             for i in range(1, e.eligible_faculties.count() + 1):
                 faculty_id = request.POST.get(f'faculty_{i}')
-                # print("########################", faculty_id)
                 if faculty_id:
                     preference_list.append({"choiceNo": i, "facultyID": faculty_id})
             choice_list = ChoiceList.objects.create(
@@ -198,7 +202,18 @@ def event(request, id):
             return HttpResponseRedirect(reverse(all_events))
         else:
             preference_range = range(1, e.eligible_faculties.count() + 1)
-            return render(request, "allocator/event.html", {'event': e, 'preference_range': preference_range})
+            curr_student = Student.objects.get(user=request.user)
+            try:
+                get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
+            except ChoiceList.DoesNotExist:
+                get_prev_choice = None
+            preferences = {}
+            if get_prev_choice:
+                for pref in get_prev_choice.preference_list:
+                    get_u = MyUser.objects.get(id=pref["facultyID"])
+                    get_fac = Faculty.objects.get(user=get_u)
+                    preferences[pref["choiceNo"]] = get_fac
+            return render(request, "allocator/event.html", {'event': e, 'preference_range': preference_range, 'filled_preference': preferences, 'filled_choice': get_prev_choice})
 
 @authorize_resource
 def create_cluster(request, id):
@@ -256,7 +271,7 @@ def reset_allocation(request, id):
             s.current_allocation = None
             s.current_index = 1
             s.save()
-        
+
         clashes = Clashes.objects.filter(event=get_event)
         for c in clashes:
             c.is_processed = True
@@ -293,12 +308,12 @@ def show_all_clashes(request):
 def resolve_clash(request, id):
     clash = Clashes.objects.get(id=id)
     students = clash.list_of_students.all()
-    
+
     preferences = []
 
     for s in students:
         chList = ChoiceList.objects.get(event=clash.event, student=s).printChoiceList()
-        preferences.append([s.user.username, s.cgpa, chList])     
+        preferences.append([s.user.username, s.cgpa, chList])
 
     print(preferences)
 

@@ -8,23 +8,84 @@
 {%block title%} registration {%endblock%}
 
 {% block body %}
-<form method="POST" action="{% url 'event' id=event.id %}">
-    {% csrf_token %}
-    <input type="hidden" name="event_id" value="{{ event.id }}">
+<div class="reg-userform">
+    <h1>BTech Major Project Choice filling</h1>
+    <form method="POST" action="{% url 'event' id=event.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="event_id" value="{{ event.id }}">
 
-    <h3>Select Your Preferences</h3>
-    {% for i in preference_range %}
-        <label for="faculty_{{ i }}">Preference {{ i }}</label>
-        <select name="faculty_{{ i }}" id="faculty_{{ i }}">
-            <option value="">Select Faculty</option>
-            {% for faculty in event.eligible_faculties.all %}
-                <option value="{{ faculty.user.id }}">{{ faculty.abbreviation }}</option>
+        <h3>Select Your Preferences</h3>
+        {% for i in preference_range %}
+            <label for="faculty_{{ i }}">Preference {{ i }}</label>
+            <select class="form-control" name="faculty_{{ i }}" id="faculty_{{ i }}">
+                <option value="">Select Faculty</option>
+                {% for faculty in event.eligible_faculties.all %}
+                    <option value="{{ faculty.user.id }}">{{ faculty.abbreviation }}</option>
+                {% endfor %}
+            </select>
+            <br>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Submit Preferences</button>
+    </form>
+    <div style="margin-top: 30px;">
+        <h3>Filled choices</h3>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Preference Number</th>
+                <th scope="col">Abbreviation of faculty</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for pref_no, fac in filled_preference.items %}
+                {% if filled_choice.current_allocation.abbreviation == fac.abbreviation %}
+                    <tr class="bg-success">
+                {% else %}
+                    <tr>
+                {% endif %}
+                    <th scope="row" style="width: 3rem;">{{forloop.counter}}</th>
+                    <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{pref_no}}</strong></td>
+                    <td>{{fac.abbreviation}}</td>
+                </tr>
             {% endfor %}
-        </select>
-        <br>
-    {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<style>
+    .reg-userform {
+        background: white;
+        padding: 3%;
+        max-width: 1100px;
+        margin: auto;
+        border-radius: 0;
+        filter: none;
+    }
 
-    <button type="submit">Submit Preferences</button>
-</form>
+    .reg-userform>h1 {
+        font-weight: bolder;
+        letter-spacing: 1.5px;
+        border-bottom: solid;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
 
+    .reg-userform>h5 {
+        font-weight: bolder;
+        margin-left: 2%;
+    }
+
+    .reg-userform-form {
+        max-width: 600px;
+        margin-left: 2%;
+        margin-top: 2rem;
+    }
+
+    p {
+        margin-left: 3%;
+        margin-top: 1rem;
+    }
+</style>
 {% endblock %}
