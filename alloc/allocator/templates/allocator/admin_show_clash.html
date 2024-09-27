@@ -15,6 +15,7 @@
                 <th scope="col">#</th>
                 <th scope="col">Event Name</th>
                 <th scope="col">Cluster ID</th>
+                <th scope="col">Faculty</th>
                 <th scope="col">Resolve clash</th>
             </tr>
             </thead>
@@ -24,6 +25,7 @@
                     <th scope="row" style="width: 3rem;">{{forloop.counter}}</th>
                     <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{clash.event.event_name}}</strong></td>
                     <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{clash.cluster_id}}</strong></td>
+                    <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{clash.faculty.abbreviation}}</strong></td>
                     <td><a href="{% url 'admin_resolve_clash' id=clash.id %}"><button class="btn btn-success">
                                 Resolve clash
                         </button></a></td>
