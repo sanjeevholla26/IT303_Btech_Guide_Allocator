@@ -208,4 +208,3 @@ class Clashes(models.Model):
 
     def __str__(self):
         return f'Clash in {self.event.event_name} - Cluster {self.cluster_id}'
-

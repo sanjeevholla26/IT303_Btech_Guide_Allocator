@@ -23,5 +23,6 @@ urlpatterns = [
     path("resolve_clash/<int:id>", views.resolve_clash, name="resolve_clash"),
     path("admin_resolve_clash/<int:id>", views.admin_resolve_clash, name="admin_resolve_clash"),
     path("eligible_events", views.eligible_events, name="eligible_events"),
-    path("event_results/<int:id>", views.event_results, name="event_results")
+    path("event_results/<int:id>", views.event_results, name="event_results"),
+    path("generate_pdf/<int:id>", views.generate_pdf, name="generate_pdf"),
 ]
