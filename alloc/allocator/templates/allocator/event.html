@@ -17,7 +17,7 @@
         <h3>Select Your Preferences</h3>
         {% for i in preference_range %}
             <label for="faculty_{{ i }}">Preference {{ i }}</label>
-            <select class="form-control" name="faculty_{{ i }}" id="faculty_{{ i }}">
+            <select class="form-control" name="faculty_{{ i }}" id="faculty_{{ i }}" required>
                 <option value="">Select Faculty</option>
                 {% for faculty in event.eligible_faculties.all %}
                     <option value="{{ faculty.user.id }}">{{ faculty.abbreviation }}</option>

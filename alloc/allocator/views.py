@@ -524,14 +524,14 @@ def generate_pdf(request, id):
         
         # Define table style
         style = TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Header background color
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Header text color
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # Align text to the left
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Bold header font
-            ('FONTSIZE', (0, 0), (-1, 0), 12),  # Header font size
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Padding for header row
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Background color for data rows
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)  # Add gridlines
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
         ])
         table.setStyle(style)
 
