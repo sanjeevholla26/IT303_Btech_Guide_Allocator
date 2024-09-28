@@ -230,6 +230,7 @@ def add_event(request):
             "faculties": all_users
         })
 
+@authorize_resource
 def edit_event(request, id):
     event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
     if request.method == 'POST':

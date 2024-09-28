@@ -15,7 +15,12 @@
     </div>
 {%endif %}
 <div class="reg-userform">
-    <h1>BTech Major Project Allocator</h1>
+    <h1 class="header-title">
+        <div class="actual-title">BTech Major Project Allocator</div>
+        <a class="nav-link" href="https://www.nitk.ac.in/">
+            <img src="{% static 'nitkLogo.svg' %}" class="nitk-logo" alt="NITK Logo">
+        </a>
+    </h1>
     <h5>Login Here</h5>
     <form action="{% url 'login' %}" method="post" class="reg-userform-form">
         {% csrf_token %}
@@ -53,6 +58,33 @@
         padding: 1rem;
         margin-bottom: 1.5rem;
     }
+
+    .reg-userform h1.header-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bolder;
+    letter-spacing: 1.5px;
+    border-bottom: solid;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.reg-userform h1.header-title .nav-link {
+    margin-left: 1rem;
+}
+
+.actual-title {
+    margin-right: 8.5rem;
+}
+
+.nitk-logo {
+    width: 5rem;
+    height: 5rem;
+    /* margin-left: 7.5rem; */
+    /* padding-left: 1rem; */
+}
+
 
     .reg-userform>h5 {
         font-weight: bolder;
