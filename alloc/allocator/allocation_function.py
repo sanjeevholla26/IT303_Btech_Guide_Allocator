@@ -7,7 +7,7 @@ def allocate(id):
     participating_profs = get_event.eligible_faculties.all()
 
     clashes = Clashes.objects.filter(event=get_event)
-    student_pref_list = ChoiceList.objects.filter(event=get_event)
+    student_pref_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa', 'student__user__username')
 
     for clusterID in range(1, get_event.cluster_count+1):
         choice_lists = []
@@ -78,21 +78,23 @@ def allocate(id):
                 prof_clash_handler(clashes_occured)
                 break
 
-def email_message(preferences, id):
-    message = "Dear Sir/Madam,\nThe below students have clashes:\n"
+def email_message(preferences, id, extraDetails):
+    message = f"Dear Sir/Madam,\n\nDuring the allocation of {extraDetails[0]}, in cluster {extraDetails[1]}: \nThe below students have clashes:\n"
+    listOfClashes = ""
     for p in preferences:
-        message = f"{message} - {p[0]} with a CGPA {p[1]} has the choice list {p[2]}.\n"
-    message = f"{message}\nKindly visit http://127.0.0.1:8000/resolve_clash/{id} to resolve the clash within 3 days.\n\nThank you,\nWith regards\nB.Tech Major Project Allocator Team"
+        listOfClashes = listOfClashes + f" - {p[0]} with a CGPA {p[1]} has the choice list {p[2]}.\n"
+    message = message+listOfClashes+f"\nKindly visit http://127.0.0.1:8000/resolve_clash/{id} to resolve the clash within 3 days.\n\nThank you,\nWith regards\nB.Tech Major Project Allocator Team"
     return message
 
 def prof_clash_handler(clashes):
     for c in clashes:
         print(f"Sending a mail to {c.faculty}.")
+        extraDetails = [c.event.event_name, c.cluster_id]
         students = c.list_of_students.all()
         preferences = []
         for s in students:
             chList = ChoiceList.objects.get(event=c.event, student=s).printChoiceList()
             preferences.append([s.user.username, s.cgpa, chList])
         # send_mail_page("sudeepym.221it068@nitk.edu.in", "Clash", email_message(preferences, c.id))
-        send_mail_page("nandanramesh.221it045@nitk.edu.in", "Clash", email_message(preferences, c.id))
+        send_mail_page("nandanramesh.221it045@nitk.edu.in", "Clash", email_message(preferences, c.id, extraDetails))
         # send_mail_page(c.faculty.user.eduMailID, "Clash", email_message(preferences))

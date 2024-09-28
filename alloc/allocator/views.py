@@ -208,9 +208,7 @@ def add_event(request):
         end_datetime = request.POST.get("end_datetime")
         batch = request.POST.get("batch")
         branch = request.POST.get("branch")
-        faculties = request.POST.getlist("faculties")  # Use getlist to retrieve multiple selected IDs
-        # print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",faculties)
-        # Create the new AllocationEvent instance
+        faculties = request.POST.getlist("faculties")
         new_event = AllocationEvent(
             owner=user,  # Set the owner to the current user
             event_name=name,
@@ -324,7 +322,7 @@ def create_cluster(request, id):
         total_profs = get_event.eligible_faculties.count()
 
         # Get the list of ChoiceList objects sorted by student CGPA in descending order
-        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa', '-student__user__username')
+        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa', 'student__user__username')
 
         max_cluster_num = 0
 
@@ -342,9 +340,8 @@ def create_cluster(request, id):
         return HttpResponseRedirect(reverse(create_cluster, args=(id, )))
     else:
         clusters = {}
-        students_choice_list = ChoiceList.objects.filter(event=get_event)
+        students_choice_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa', 'student__user__username')
         if get_event.cluster_count != 0:
-            students_choice_list = ChoiceList.objects.filter(event=get_event)
             for choice in students_choice_list:
                 cluster_no = choice.cluster_number
                 if cluster_no not in clusters:
@@ -460,6 +457,7 @@ def admin_resolve_clash(request, id):
     allocate(clash.event.id)
     return HttpResponseRedirect(reverse(admin_show_clash))
 
+@authorize_resource
 def eligible_events(request):
     if request.method == "GET":
         fac = Faculty.objects.get(user=request.user)
