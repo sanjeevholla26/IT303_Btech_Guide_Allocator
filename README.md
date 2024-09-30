@@ -15,3 +15,9 @@
    actions - show_all_clashes,resolve_clash
 
 app name - allocator (common for all)
+
+
+Install Redis
+   Remove comment from bind 127.0.0.1 in .conf file(redis.windows.config)
+   Start redis server using config file in Redis installed directory [redis-server ./redis.windows.config]
+   To start redis for out task(email): python -m celery -A alloc worker --pool=solo -l info

@@ -1,5 +1,6 @@
 from .models import MyUser, Role, Student, Faculty, AllocationEvent, ChoiceList, Clashes
 from .email_sender import send_mail_page
+from .tasks import send_email_task
 
 def allocate(id):
     get_event = AllocationEvent.objects.get(id=id)
@@ -96,5 +97,6 @@ def prof_clash_handler(clashes):
             chList = ChoiceList.objects.get(event=c.event, student=s).printChoiceList()
             preferences.append([s.user.username, s.cgpa, chList])
         # send_mail_page("sudeepym.221it068@nitk.edu.in", "Clash", email_message(preferences, c.id))
-        send_mail_page("nandanramesh.221it045@nitk.edu.in", "Clash", email_message(preferences, c.id, extraDetails))
+        #send_mail_page("nandanramesh.221it045@nitk.edu.in", "Clash", email_message(preferences, c.id, extraDetails))
         # send_mail_page(c.faculty.user.eduMailID, "Clash", email_message(preferences))
+        send_email_task.delay("sudeepym.221it068@nitk.edu.in", "Clash", email_message(preferences, c.id,extraDetails))

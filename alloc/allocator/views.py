@@ -409,6 +409,10 @@ def resolve_clash(request, id):
     clash = Clashes.objects.get(id=id)
     students = clash.list_of_students.all()
 
+    if(clash.faculty.user!=request.user):
+        messages.error(request, "You cannot access this page.")
+        return HttpResponseRedirect(reverse(show_all_clashes))
+
     preferences = []
 
     for s in students:
