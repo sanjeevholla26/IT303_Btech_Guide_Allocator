@@ -18,6 +18,7 @@
                 <th scope="col">End date</th>
                 <th scope="col">View</th>
                 <th scope="col">Edit Event</th>
+                <th scope="col">Add Backlog</th>
             </tr>
             </thead>
             <tbody>
@@ -32,6 +33,9 @@
                      </button></a></td>
                      <td><a href="{% url 'edit_event' id=event.id %}"><button class="btn btn-success" {% if not event.is_active %}disabled{% endif %}>
                         Edit
+                     </button></a></td>
+                     <td><a href="{% url 'add_backlog' id=event.id %}"><button class="btn btn-success">
+                        Add Backlog
                      </button></a></td>
                 </tr>
             {% endfor %}

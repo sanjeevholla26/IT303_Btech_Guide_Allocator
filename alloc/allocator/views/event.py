@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..decorators import authorize_resource
-from ..models import AllocationEvent, Faculty
+from ..models import AllocationEvent, Faculty,Student
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
@@ -135,3 +135,20 @@ def event_results(request, id):
     else:
         messages.error(request, "Invalid request method")
         return HttpResponseRedirect(reverse('home'))
+
+def add_backlog(request,id):
+    if request.method=="GET":
+        students=Student.objects.all()
+        return render(request,"add_backlog.html",{
+            "id":id,
+            "students":students
+        })
+    else:
+        event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
+        students = request.POST.getlist("students")
+        event.start_datetime = request.POST.get('start_datetime')
+        event.end_datetime = request.POST.get('end_datetime')
+        event.for_backlog=True
+        event.eligible_students.set(students)
+        event.save()
+        return redirect('home')  # Redirect to a success page or home
