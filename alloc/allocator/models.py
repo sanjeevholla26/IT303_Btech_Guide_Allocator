@@ -164,6 +164,7 @@ class ChoiceList(models.Model):
     current_allocation = models.ForeignKey(Faculty, null=True, blank=True, on_delete=models.SET_NULL, related_name='allocated_choices')
     current_index = models.IntegerField(default=1)
     cluster_number = models.IntegerField()
+    is_locked = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.student.user.username} - {self.event.event_name}'
