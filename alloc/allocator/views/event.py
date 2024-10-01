@@ -68,17 +68,29 @@ def edit_event(request, id):
 
 
 @authorize_resource
-def all_events(request):
+def all_events(request): # needs changes
     if request.method == "GET":
         active_events = AllocationEvent.active_events()
         user_branch = request.user.student.branch
         user_batch = request.user.student.academic_year
+        user_backlog=request.user.student.has_backlog
+        student=request.user.student
+        if user_backlog is False:
+            eligible_events = active_events.filter(eligible_batch=user_batch, eligible_branch=user_branch)
 
-        eligible_events = active_events.filter(eligible_batch=user_batch, eligible_branch=user_branch)
+            return render(request, "allocator/all_events.html", {
+                "events" : eligible_events
+            })
+        else:
+            eligible_events=active_events.filter(for_backlog=True)
+            res=[]
+            for event in eligible_events:
+                if event.eligible_students.filter(pk=student.pk).exists():  # Check if student is in eligible_students
+                    res.append(event)
 
-        return render(request, "allocator/all_events.html", {
-            "events" : eligible_events
-        })
+            return render(request, "allocator/all_events.html", {
+                "events" : res
+            })
     else:
         return HttpResponseRedirect(reverse('home'))
 
