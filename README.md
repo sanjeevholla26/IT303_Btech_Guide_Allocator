@@ -4,15 +4,15 @@
 
 1. Roles - admin
    
-   actions - login,home,register,add_student,add_event,edit_event,add_faculty,admin_all_events,create_cluster,run_allocation,reset_allocation,admin_show_clash,admin_resolve_clash,add_permissions,generate_pdf,event_results,eligible_events
+   actions - login,home,register,add_student,add_event,edit_event,add_faculty,admin_all_events,create_cluster,run_allocation,reset_allocation,admin_show_clash,admin_resolve_clash,add_permissions,generate_pdf,event_results,eligible_events,logout
 
 3. Roles - Student
    
-   actions - all_events,event
+   actions - all_events,event,logout
 
 5. Roles - Faculty
    
-   actions - show_all_clashes,resolve_clash
+   actions - show_all_clashes,resolve_clash,logout
 
 app name - allocator (common for all)
 
