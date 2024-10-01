@@ -24,8 +24,9 @@ def create_cluster(request, id):
             choice.cluster_number = cluster_no
             choice.save()
 
-        get_event.cluster_count = max_cluster_num
-        get_event.save()
+        AllocationEvent.objects.update_event(get_event,cluster_count=max_cluster_num)
+        # get_event.cluster_count = max_cluster_num
+        # get_event.save()
 
         # return HttpResponseRedirect(reverse(admin_all_events))
         return HttpResponseRedirect(reverse(create_cluster, args=(id, )))

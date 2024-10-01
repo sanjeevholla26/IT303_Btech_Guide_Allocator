@@ -42,22 +42,22 @@ def login_view(request) :
 
             if user:
                 admin_role = Role.objects.get(role_name='admin')
-                if admin_role in user.roles.all():
-                    return render(request, "allocator/login_password.html", {
-                    "next": next,
-                    "edu_email": edu_email
+                # if admin_role in user.roles.all():
+                return render(request, "allocator/login_password.html", {
+                "next": next,
+                "edu_email": edu_email
                 })
-                else:
-                    user.otp=None
-                    user.save()
-                    user.otp=generate_otp()
-                    user.save()
-                    send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
-                    return render(request, "allocator/login_otp.html", {
-                        "message" : "OTP has been sent to your email. Please enter it below.",
-                        "next": next,
-                        "edu_email": edu_email
-                    })
+                # else:
+                #     user.otp=None
+                #     user.save()
+                #     user.otp=generate_otp()
+                #     user.save()
+                #     send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+                #     return render(request, "allocator/login_otp.html", {
+                #         "message" : "OTP has been sent to your email. Please enter it below.",
+                #         "next": next,
+                #         "edu_email": edu_email
+                #     })
             else :
                 return render(request, "allocator/login.html", {
                     "message" : "Invalid username."
@@ -166,7 +166,7 @@ def complete_login(request) :
     else :
         return HttpResponseRedirect(reverse('home'))
 
-@authorize_resource
+
 def logout_view(request) :
     if request.user.is_authenticated:
             logout(request)

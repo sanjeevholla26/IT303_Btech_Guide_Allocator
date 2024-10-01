@@ -3,6 +3,8 @@ from .faculty import Faculty
 from .student import Student
 from .allocation_event import AllocationEvent
 
+from allocator.manager.choicelist_manager import ChoiceListManager
+
 class ChoiceList(models.Model):
     event = models.ForeignKey(AllocationEvent, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -11,6 +13,8 @@ class ChoiceList(models.Model):
     current_index = models.IntegerField(default=1)
     cluster_number = models.IntegerField()
     is_locked = models.BooleanField(default=False)
+
+    objects=ChoiceListManager()
 
     def __str__(self):
         return f'{self.student.user.username} - {self.event.event_name}'
