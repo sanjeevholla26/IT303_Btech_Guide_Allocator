@@ -48,6 +48,8 @@ class MyUser(AbstractUser):
     # email = models.EmailField(unique=True)  # Override the default email field to make it unique
     eduMailID = models.EmailField(unique=True)
     phone_no = models.CharField(max_length=15)
+    otp = models.CharField(max_length=10, blank=True, null=True)
+    is_registered = models.BooleanField(default=False)
 
     def __str__(self):
         return self.eduMailID

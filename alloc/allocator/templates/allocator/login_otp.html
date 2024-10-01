@@ -22,20 +22,20 @@
                 <img src="{% static 'nitkLogo.svg' %}" class="nitk-logo" alt="NITK Logo">
             </a>
         </h1>
-        <h5>Login Here</h5>
+        <h5>Enter the OTP</h5>
 
-        <form action="{% url 'login' %}" method="post" class="reg-userform-form">
+        <form action="{% url 'otp' %}" method="post" class="reg-userform-form">
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="exampleInputEmail1">NITK ID</label>
-                <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                    placeholder="Username" name="eduMailID" required>
-                <small id="emailHelp" class="form-text text-muted">The NITK ID must be unique</small>
+                <label for="otp_entry">OTP:</label>
+                <input type="text" class="form-control" id="otp_entry" aria-describedby="otp_entry"
+                    placeholder="Enter your OTP" name="otp_entry" required>
             </div>
-            
-            <input type="hidden" name="next" value="{{ request.GET.next }}">
-            <button type="submit" class="btn btn-primary">Login</button>
+
+            <input type="hidden" name="next" value="{{ next }}">
+            <input type="hidden" name="eduMailID" value="{{ eduMailID }}">
+            <button type="submit" class="btn btn-primary">Submit OTP</button>
 
         </form>
 
