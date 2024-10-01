@@ -27,7 +27,7 @@
                     <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{event.event_name}}</strong></td>
                     <td>{{event.start_datetime}}</td>
                     <td>{{event.end_datetime}}</td>
-                    <td><a href="{% url 'event' id=event.id %}"><button class="btn btn-success">Form
+                    <td><a href="{% url 'create_or_edit_choicelist' id=event.id %}"><button class="btn btn-success">Form
                     </button></a></td>
                 </tr>
             {% endfor %}
