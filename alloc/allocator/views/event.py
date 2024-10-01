@@ -5,6 +5,8 @@ from ..decorators import authorize_resource
 from ..models import AllocationEvent, Faculty
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from django.utils import timezone
+
 
 
 
@@ -85,6 +87,10 @@ def all_events(request):
 def admin_all_events(request):
     if request.method == "GET":
         all_events = AllocationEvent.objects.all()
+        now = timezone.now()  # Get the current time
+        # Create a list of booleans where True means the event is active (before end_datetime)
+        for event in all_events:
+            event.is_active = event.end_datetime >= now
         return render(request, "allocator/admin_all_events.html", {
             "events" : all_events,
         })
