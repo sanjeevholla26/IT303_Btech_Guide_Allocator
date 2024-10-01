@@ -69,6 +69,43 @@ Event Control
     {% endfor %}
     {% endif %}
 </div>
+
+<!-- Backlog Students Section -->
+{% if backlog %}
+<h1>Backlog Students</h1>
+<form action="{% url 'allot_backlog' id=event.id %}" method="post">
+    {% csrf_token %}
+    <table border="1" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>CGPA</th>
+                <th>Preference Choices</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for choice in backlog %}
+            <tr>
+                <td>{{ choice.student.user.edu_email }}</td>
+                <td>{{ choice.student.cgpa }}</td>
+                <td>
+                    {% for preference in choice.preference_list %}
+                    <div>
+                        <input type="radio" name="choice_{{ choice.id }}" value="{{ preference.facultyID }}" id="pref_{{ choice.id }}_{{ forloop.counter }}">
+                        <label for="pref_{{ choice.id }}_{{ forloop.counter }}">
+                            {{ preference.choiceNo }}: {{ preference.facultyID }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Allot</button>
+</form>
+{% endif %}
+
 <style>
     form{
         margin-bottom: 10px;

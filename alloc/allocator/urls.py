@@ -28,5 +28,6 @@ urlpatterns = [
     path("eligible_events", views.eligible_events, name="eligible_events"),
     path("event_results/<int:id>", views.event_results, name="event_results"),
     path("generate_pdf/<int:id>", views.generate_pdf, name="generate_pdf"),
-    path("add_backlog/<int:id>",views.event.add_backlog,name="add_backlog")
+    path("add_backlog/<int:id>",views.add_backlog,name="add_backlog"),
+    path("allot_backlog/<int:id>",views.allot_backlog,name="allot_backlog")
 ]

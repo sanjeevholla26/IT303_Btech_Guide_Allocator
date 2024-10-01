@@ -76,7 +76,7 @@ def all_events(request): # needs changes
         user_backlog=request.user.student.has_backlog
         student=request.user.student
         if user_backlog is False:
-            eligible_events = active_events.filter(eligible_batch=user_batch, eligible_branch=user_branch)
+            eligible_events = active_events.filter(eligible_batch=user_batch, eligible_branch=user_branch,for_backlog=False)
 
             return render(request, "allocator/all_events.html", {
                 "events" : eligible_events
