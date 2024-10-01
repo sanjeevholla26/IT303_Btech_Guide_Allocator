@@ -15,16 +15,21 @@
         <h5>Add Faculty Here</h5>
         <form action="{% url 'add_faculty' %}" method="post" class="reg-userform-form">
             {% csrf_token %}
-            <div class="form-group col-md-4">
-                <label for="inputState">Select User</label>
-                <select id="inputState" class="form-control" name="user_id" style="overflow-y: scroll;">
-                    <option selected>Choose a User</option>
-                    {% for user in users %}
-                    <option value="{{ user.id }}">
-                        <strong>{{ user }}</strong>
-                    </option>
-                    {% endfor %}
-                </select>
+            <div class="form-group">
+                <label for="exampleInputEmail1">NITK EDU mail-ID</label>
+                <input type="email" class="form-control" id="edu_mail" aria-describedby="emailHelp"
+                    placeholder="Enter the faculty's NITK MailID" name="edu_mail" autocomplete="off" required>
+                <small id="nitkMailID" class="form-text text-muted">Enter the faculty's NITK mail ID.</small>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputEmail1">Email address</label>
+                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+                    placeholder="Enter email" name="email" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="username">Roll No/ Employee ID</label>
+                <input type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Enter Employee ID"
+                    name="username" autocomplete="off" required>
             </div>
             <div class="form-group">
                 <label for="abbreviation">Abbreviation</label>

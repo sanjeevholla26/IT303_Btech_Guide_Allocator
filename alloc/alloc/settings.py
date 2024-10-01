@@ -26,6 +26,8 @@ SECRET_KEY = 'django-insecure-%^n&0ydk3zq$zjj26nm^nh=x7@$*u$i$2@p%!$%_+9a_!i6%f2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+QUICK_LOGIN = True
+
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.135.78.255', '0.0.0.0']
 
 AUTH_USER_MODEL = 'allocator.MyUser'
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'allocator',
+    'captcha',
 ]
 
 MIDDLEWARE = [

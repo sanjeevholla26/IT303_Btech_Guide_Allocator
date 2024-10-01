@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -7,8 +9,16 @@ from ..models import MyUser, Role, Faculty
 @authorize_resource
 def add_faculty(request):
     if request.method == "POST":
-        user_id = request.POST["user_id"]
-        user = MyUser.objects.get(id=user_id)
+        edu_email = request.POST["edu_mail"]
+        email = request.POST["email"]
+        username = request.POST["username"]
+        try:
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
+            user.save()
+        except IntegrityError as e:
+            messages.error(request, "Employee ID already exists.")
+            return HttpResponseRedirect(reverse('add_faculty'))
+        
         abbreviation = request.POST["abbreviation"]
 
         new_faculty = Faculty(

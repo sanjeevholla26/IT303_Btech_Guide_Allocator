@@ -1,17 +1,28 @@
+from django.db import IntegrityError
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import MyUser, Student, Role
+
+
 @authorize_resource
 def add_student(request):
     if request.method == "POST":
-        user_id = request.POST["user_id"]
-        user = MyUser.objects.get(id=user_id)
+        username = request.POST["username"]
+        edu_email = request.POST["edu_mail"]
+        email = request.POST["email"]
+        try:
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
+            user.save()
+        except IntegrityError as e:
+            messages.error(request, "Roll number already exists.")
+            return HttpResponseRedirect(reverse('add_student'))
+        
         cgpa = request.POST["cgpa"]
         academic_year = request.POST["aca_year"]
-        branch = request.POST["branch"]
-
+        branch = request.POST["branch"]        
         new_student = Student(
             user = user,
             cgpa = cgpa,

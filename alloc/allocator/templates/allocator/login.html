@@ -28,16 +28,23 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="exampleInputEmail1">NITK ID</label>
+                <label for="exampleInputEmail1">NITK EDU Mail-ID</label>
                 <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                    placeholder="Username" name="edu_email" required>
+                    placeholder="NITK mail ID" name="edu_email" required>
                 <small id="emailHelp" class="form-text text-muted">The NITK ID must be unique</small>
+            </div>
+
+            <div class="form-group">
+                <img src="{{ captcha.1 }}" alt="Captcha Image-Kindly reset URL to /"><br>
+                <input type="text" class="form-control" name="captcha" placeholder="Enter the Captcha" value="{{ captcha.2 }}" required>
+                <input type="hidden" name="captcha_key" value="{{ captcha.0 }}">
             </div>
 
             <input type="hidden" name="next" value="{{ request.GET.next }}">
             <button type="submit" class="btn btn-primary">Login</button>
 
         </form>
+
 
     </div>
 </div>
