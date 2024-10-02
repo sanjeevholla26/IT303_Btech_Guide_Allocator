@@ -45,7 +45,7 @@ def generate_captcha():
         result = CaptchaStore.objects.get(hashkey=captcha_key).response
     return [captcha_key, captcha_image, result]
 
-def send_to_otp(request, user, next_page):
+def send_to_otp(request, user, next_url):
     user.otp = None
     user.save()
     user.otp = generate_otp()
@@ -53,7 +53,7 @@ def send_to_otp(request, user, next_page):
     send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
     return render(request, "allocator/login_otp.html", {
             "message": "OTP has been sent to your email. Please enter it below.",
-            "next": next_page,
+            "next": next_url,
             "edu_email": user.edu_email
         })
 
@@ -61,7 +61,7 @@ def login_view(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
             edu_email = request.POST["edu_email"]
-            next_page = request.POST.get("next", "")
+            next_url = request.POST.get("next", "")
             captcha_key = request.POST.get('captcha_key')
             captcha_response = request.POST.get('captcha')
 
@@ -72,20 +72,13 @@ def login_view(request):
                     try:
                         user = MyUser.objects.get(edu_email=edu_email)
                         if user:
-                            admin_role = Role.objects.get(role_name='admin')
-                            if admin_role in user.roles.all() or QUICK_LOGIN:
+                            if user.is_registered:
                                 return render(request, "allocator/login_password.html", {
-                                    "next": next_page,
+                                    "next": next_url,
                                     "edu_email": edu_email
                                 })
                             else:
-                                if user.is_registered:
-                                    return render(request, "allocator/login_password.html", {
-                                        "next": next_page,
-                                        "edu_email": edu_email
-                                    })
-                                else:
-                                    return send_to_otp(request, user, next_page)
+                                return send_to_otp(request, user, next_url)
                         else:
                             return render(request, "allocator/login.html", {
                                 "message": "Invalid username.",
@@ -119,27 +112,27 @@ def otp(request) :
         if request.method == "POST" :
             edu_email = request.POST["edu_email"]
             otp = request.POST["otp_entry"]
-            next = request.POST["next"]
+            next_url = request.POST["next"]
             user = MyUser.objects.get(edu_email=edu_email)
 
             if user and user.otp == otp:
                 if user.is_registered:
                     login(request, user)
-                    return HttpResponseRedirect(next if next else reverse('home'))
+                    return HttpResponseRedirect(next_url if next_url else reverse('home'))
                     # return render(request, "allocator/login_password.html", {
-                    #     "next": next,
+                    #     "next": next_url,
                     #     "edu_email": edu_email
                     # })
                 else:
                     return render(request, "allocator/login_create_password.html", {
-                        "next": next,
+                        "next": next_url,
                         "edu_email": edu_email
                     })
 
             else :
                 return render(request, "allocator/login.html", {
                     "message" : "Invalid OTP. Kindly restart the login.",
-                    "next": next,
+                    "next": next_url,
                     "captcha": generate_captcha(),
                 })
 
@@ -168,7 +161,6 @@ def create_password(request) :
                     user.set_password(password)
                     user.is_registered = True
                     user.save()
-                    print(next_url)
                     authenticate(request, edu_email=edu_email, password=password)
                     login(request, user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
@@ -199,11 +191,12 @@ def complete_login(request) :
             next_url = request.POST["next"]
             user = authenticate(request, edu_email=edu_email, password=password)
             if user is not None :
-                if not QUICK_LOGIN:
-                    return send_to_otp(request, user, next_url)
-                else:
+                admin_role = Role.objects.get(role_name='admin')
+                if admin_role in user.roles.all() or QUICK_LOGIN:
                     login(request, user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
+                else:
+                    return send_to_otp(request, user, next_url)
             else:
                 ############################## Need to change this #######################################
                 return render(request, "allocator/login.html", {
