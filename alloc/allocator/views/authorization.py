@@ -11,8 +11,7 @@ from django.urls import reverse
 from django.urls import reverse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
-
-QUICK_LOGIN = False
+from alloc.settings import QUICK_LOGIN
 
 import random
 
@@ -78,27 +77,28 @@ def login_view(request):
                                     "edu_email": edu_email
                                 })
                             else:
-                                return send_to_otp(request, user, next_url)
+                                if QUICK_LOGIN:
+                                    return render(request, "allocator/login_create_password.html", {
+                                        "next": next_url,
+                                        "edu_email": edu_email
+                                    })
+                                else:
+                                    return send_to_otp(request, user, next_url)
                         else:
-                            return render(request, "allocator/login.html", {
-                                "message": "Invalid username.",
-                                'captcha': generate_captcha(),
-                            })
+                            messages.error(request, "Invalid username.")
+                            return HttpResponseRedirect(reverse(login_view))
+                            
                     except MyUser.DoesNotExist:
-                        return render(request, "allocator/login.html", {
-                            "message": "User does not exist.",
-                            'captcha': generate_captcha()
-                        })
+                        messages.error(request, "User does not exist.")
+                        return HttpResponseRedirect(reverse(login_view))
+                        
                 else:
-                    return render(request, "allocator/login.html", {
-                        "message": "Invalid captcha. Please try again.",
-                        'captcha': generate_captcha()
-                    })
+                    messages.error(request, "Invalid captcha. Please try again.")
+                    return HttpResponseRedirect(reverse(login_view))
+                    
             except CaptchaStore.DoesNotExist:
-                return render(request, "allocator/login.html", {
-                    "message": "Captcha validation error. Please try again.",
-                    'captcha': generate_captcha()
-                })
+                messages.error(request, "Captcha validation error. Please try again.")
+                return HttpResponseRedirect(reverse(login_view))
 
         else:
             return render(request, "allocator/login.html", {
@@ -120,10 +120,6 @@ def otp(request) :
                 if user.is_registered:
                     login(request, user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
-                    # return render(request, "allocator/login_password.html", {
-                    #     "next": next_url,
-                    #     "edu_email": edu_email
-                    # })
                 else:
                     return render(request, "allocator/login_create_password.html", {
                         "next": next_url,
