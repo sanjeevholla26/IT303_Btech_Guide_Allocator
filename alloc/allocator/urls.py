@@ -27,6 +27,8 @@ urlpatterns = [
     path("admin_resolve_clash/<int:id>", views.admin_resolve_clash, name="admin_resolve_clash"),
     path("eligible_events", views.eligible_events, name="eligible_events"),
     path("event_results/<int:id>", views.event_results, name="event_results"),
-    path("generate_pdf/<int:id>", views.generate_pdf, name="generate_pdf"),
+    path("generate_student_pdf/<int:id>", views.generate_student_pdf, name="generate_student_pdf"),
+    path("generate_faculty_pdf/<int:id>", views.generate_faculty_pdf, name="generate_faculty_pdf"),
+    path("generate_admin_pdf/<int:id>", views.generate_admin_pdf, name="generate_admin_pdf"),
     path('captcha/', include('captcha.urls')),
 ]
