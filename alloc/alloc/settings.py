@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-%^n&0ydk3zq$zjj26nm^nh=x7@$*u$i$2@p%!$%_+9a_!i6%f2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ADMIN_BYPASS = True
 QUICK_LOGIN = True
 FAILS_COUNT = 3
 FAILS_DELAY = 1
