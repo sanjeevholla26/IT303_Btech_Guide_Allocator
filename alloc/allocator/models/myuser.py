@@ -27,7 +27,9 @@ class CustomUserManager(BaseUserManager):
         username="Admin"
 
         created_user = self.create_user(edu_email, "default@gmail.com", username, password, **extra_fields)
-
+        created_user.is_registered = True
+        created_user.save()
+        
         return created_user
 
 
@@ -37,6 +39,8 @@ class MyUser(AbstractUser):
     phone_no = models.CharField(max_length=15)
     otp = models.CharField(max_length=10, blank=True, null=True)
     is_registered = models.BooleanField(default=False)
+    failed_attempts = models.IntegerField(default=0)
+    failed_blocked = models.DateTimeField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.edu_email

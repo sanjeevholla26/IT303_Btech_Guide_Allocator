@@ -42,9 +42,6 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                {% if request.user|has_permission:'register,allocator' %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Add a new user</a></li>
-                {% endif %}
                 {% if request.user|has_permission:'add_student,allocator' %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'add_student' %}">Add a new Student</a></li>
                 {% endif %}

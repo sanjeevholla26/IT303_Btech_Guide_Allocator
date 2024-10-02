@@ -3,6 +3,19 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import AllocationEvent, Faculty, Student, ChoiceList, MyUser
+from ..email_sender import send_mail_page
+
+def choice_locking_message(choice):
+    message = "Dear student,\n"
+    preferences = ""
+    for pref in choice.preference_list:
+        get_u = MyUser.objects.get(id=pref["facultyID"])
+        get_fac = Faculty.objects.get(user=get_u)
+        preferences = preferences + f"{pref['choiceNo']} : {get_fac}\n"
+    message = message + f"\nYou have successfully locked the below choices for the event {choice.event.event_name}:\n{preferences}\nWe wish you the best for your allocations."
+    message = message + "\nThank you,\nBTech Major Project Allocation Team"
+    return message
+    
 
 import logging
 
@@ -45,10 +58,13 @@ def create_or_edit_choicelist(request, id):
             else:
                 curr_student = Student.objects.get(user=request.user)
                 get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
+
                 ChoiceList.objects.update_choice_list(choice_list=get_prev_choice,is_locked=True)
                 logger.info(f"User: {curr_student.user.username} locked choices as {get_prev_choice.preference_list}")
                 # get_prev_choice.is_locked=True
                 # get_prev_choice.save()
+                send_mail_page(curr_student.user.edu_email, "Choice Locking", choice_locking_message(get_prev_choice))
+  
                 return HttpResponseRedirect(reverse('events'))
         else:
             preference_range = range(1, e.eligible_faculties.count() + 1)

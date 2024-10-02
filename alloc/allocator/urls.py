@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 
@@ -7,7 +7,7 @@ urlpatterns = [
     path("otp", views.otp, name="otp"),
     path("complete_login", views.complete_login, name="complete_login"),
     path("create_password", views.create_password, name="create_password"),
-    path("register/", views.register, name = "register"),
+    # path("register/", views.register, name = "register"),
     path("home/", views.home, name="home"),
     path("logout/", views.logout_view, name="logout"),
     path("add_student/", views.add_student, name="add_student"),
@@ -28,4 +28,5 @@ urlpatterns = [
     path("eligible_events", views.eligible_events, name="eligible_events"),
     path("event_results/<int:id>", views.event_results, name="event_results"),
     path("generate_pdf/<int:id>", views.generate_pdf, name="generate_pdf"),
+    path('captcha/', include('captcha.urls')),
 ]

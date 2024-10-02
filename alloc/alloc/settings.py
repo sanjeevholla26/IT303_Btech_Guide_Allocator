@@ -26,6 +26,10 @@ SECRET_KEY = 'django-insecure-%^n&0ydk3zq$zjj26nm^nh=x7@$*u$i$2@p%!$%_+9a_!i6%f2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+QUICK_LOGIN = True
+FAILS_COUNT = 3
+FAILS_DELAY = 1
+
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.135.78.255', '0.0.0.0']
 
 AUTH_USER_MODEL = 'allocator.MyUser'
@@ -40,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'allocator',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -110,14 +115,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE =  'Asia/Calcutta'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_L10N = True
 
+# USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
