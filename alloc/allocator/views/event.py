@@ -68,7 +68,8 @@ def edit_event(request, id):
 @authorize_resource
 def all_events(request): # needs changes
     if request.method == "GET":
-        active_events = AllocationEvent.active_events()
+        # active_events = AllocationEvent.active_events()
+        active_events = AllocationEvent.objects.all()
         user_branch = request.user.student.branch
         user_batch = request.user.student.academic_year
         user_backlog=request.user.student.has_backlog

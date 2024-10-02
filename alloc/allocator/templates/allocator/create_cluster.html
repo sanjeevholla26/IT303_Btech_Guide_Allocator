@@ -70,6 +70,37 @@ Event Control
     {% endif %}
 </div>
 
+
+{% if backlog_alloted %}
+<h1>Backlog Allocated Students</h1>
+<table border="1" class="table table-striped">
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>CGPA</th>
+            <th>Allocated Professor</th>
+            <th>Preference Choices</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for choice in backlog_alloted %}
+        <tr>
+            <td>{{ choice.student.user.edu_email }}</td>
+            <td>{{ choice.student.cgpa }}</td>
+            <td>{{ choice.current_allocation.user.edu_email }}</td> <!-- Showing the professor's username -->
+            <td>
+                {% for preference in choice.preference_list %}
+                <div>{{ preference.choiceNo }}: {{ preference.facultyID }}</div>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+
+
 <!-- Backlog Students Section -->
 {% if backlog %}
 <h1>Backlog Students</h1>

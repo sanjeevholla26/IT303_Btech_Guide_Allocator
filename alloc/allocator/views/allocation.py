@@ -53,10 +53,14 @@ def create_cluster(request, id):
                     if cluster_no not in clusters:
                         clusters[cluster_no] = []
                     clusters[cluster_no].append(choice)
+            backlog_allocated = backlog_choices.filter(current_allocation__isnull=False)
+            backlog_not_allocated = backlog_choices.filter(current_allocation__isnull=True)
+
             return render(request, "allocator/create_cluster.html", {
                 "event" : get_event,
                 "clusters": clusters,
-                "backlog":backlog_choices,
+                "backlog":backlog_not_allocated,
+                "backlog_alloted":backlog_allocated,
                 "id":id
             })
 
