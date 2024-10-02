@@ -65,8 +65,6 @@ def edit_event(request, id):
         })
 
 
-
-
 @authorize_resource
 def all_events(request): # needs changes
     if request.method == "GET":

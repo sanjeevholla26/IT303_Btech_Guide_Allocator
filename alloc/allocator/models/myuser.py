@@ -25,7 +25,9 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         created_user = self.create_user(edu_email, "default@gmail.com", username, password, **extra_fields)
-
+        created_user.is_registered = True
+        created_user.save()
+        
         return created_user
 
 

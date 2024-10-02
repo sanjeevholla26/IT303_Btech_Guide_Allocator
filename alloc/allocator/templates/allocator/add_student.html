@@ -15,20 +15,25 @@
         <h5>Add Student Here</h5>
         <form action="{% url 'add_student' %}" method="post" class="reg-userform-form">
             {% csrf_token %}
-            <div class="form-group col-md-4">
-                <label for="inputState">Select User</label>
-                <select id="inputState" class="form-control" name="user_id" style="overflow-y: scroll;">
-                    <option selected>Choose a User</option>
-                    {% for user in users %}
-                    <option value="{{ user.id }}">
-                        <strong>{{ user }}</strong>
-                    </option>
-                    {% endfor %}
-                </select>
+            <div class="form-group">
+                <label for="exampleInputEmail1">NITK EDU mail-ID</label>
+                <input type="email" class="form-control" id="edu_mail" aria-describedby="emailHelp"
+                    placeholder="Enter the student's NITK MailID" name="edu_mail" autocomplete="off" required>
+                <small id="nitkMailID" class="form-text text-muted">Enter the student's NITK mail ID.</small>
             </div>
             <div class="form-group">
-                <label for="username1">CGPA</label>
-                <input type="text" class="form-control" id="username1" placeholder="CGPA" name="cgpa" autocomplete="off"
+                <label for="exampleInputEmail1">Email address</label>
+                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+                    placeholder="Enter email" name="email" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="username">Roll No</label>
+                <input type="text" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Enter student's Roll Number"
+                    name="username" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+                <label for="CGPA">CGPA</label>
+                <input type="text" class="form-control" id="CGPA" placeholder="CGPA" name="cgpa" autocomplete="off"
                     required>
             </div>
             <div class="form-group">
