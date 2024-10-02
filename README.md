@@ -12,7 +12,7 @@
 
 5. Roles - Faculty
    
-   actions - show_all_clashes,resolve_clash,eligible_events,logout_view
+   actions - show_all_clashes,resolve_clash,eligible_events,logout_view,event_results
 
 app name - allocator (common for all)
 
