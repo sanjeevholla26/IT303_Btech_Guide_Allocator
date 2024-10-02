@@ -5,14 +5,16 @@ from ..models import ChoiceList, Role
 from django.contrib import messages
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from io import BytesIO
 from datetime import datetime
-from django.core.mail import EmailMessage
+from ..tasks import send_email_report
 
+logo_path = 'allocator/static/nitkLogo.png'
 
 @authorize_resource
 def generate_student_pdf(request, id):
@@ -29,13 +31,22 @@ def generate_student_pdf(request, id):
 
         # Get the default stylesheet and customize heading
         styles = getSampleStyleSheet()
-        heading_style = styles['Heading1'] 
-        heading_style.alignment = 1  
-        heading_style.fontSize = 24  
-        heading_style.textColor = colors.black
 
         # Create the heading paragraph
-        heading = Paragraph("PROJECT ALLOCATION DETAILS", heading_style)
+        main_heading_style = styles['Heading1']
+        main_heading_style.alignment = 1  # Center alignment
+        main_heading_style.fontSize = 28  # Larger font size for the main heading
+        main_heading_style.textColor = colors.black  # Black color for the main heading
+
+        # Create the secondary heading style
+        sub_heading_style = styles['Heading1']
+        sub_heading_style.alignment = 1  # Center alignment
+        sub_heading_style.fontSize = 22  # Slightly smaller font size for the subheading
+        sub_heading_style.textColor = colors.black  # Black color for the subheading
+
+        # Create the main and sub-headings
+        main_heading = Paragraph("National Institute of Technology Surathkal", main_heading_style)
+        sub_heading = Paragraph("PROJECT ALLOCATION DETAILS", sub_heading_style)
 
         data = [
             ['Field', 'Details'],  # Table header
@@ -56,34 +67,48 @@ def generate_student_pdf(request, id):
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), 
             ('FONTSIZE', (0, 0), (-1, 0), 12),  
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12), 
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),  
             ('GRID', (0, 0), (-1, -1), 1, colors.black)  
         ])
         table.setStyle(style)
 
+        logo = Image(logo_path, width=1.6 * inch, height=1.2 * inch)
+        
         # Build the PDF with the heading and the table
         elements = []
-        elements.append(heading)
-        elements.append(Spacer(1, 0.5*inch))  # Add some space between heading and table
+        elements.append(logo)  # Add the logo to the top left
+        elements.append(Spacer(1, 0.1 * inch))  # Add some space after the logo
+        elements.append(main_heading)  # Add the main heading
+        elements.append(Spacer(1, 0.2 * inch))  # Add some space after the main heading
+        elements.append(sub_heading)  # Add the sub-heading
+        elements.append(Spacer(1, 0.5 * inch))  # Add space between heading and table
         elements.append(table)
-        doc.build(elements)
+
+        def add_page_border(canvas, doc):
+            # Get the page width and height
+            width, height = A4
+
+            # Set the stroke color and line width
+            canvas.setStrokeColorRGB(0, 0, 0)  # Black color for the border
+            canvas.setLineWidth(2)  # Thickness of the border
+
+            # Draw the rectangle (border) around the entire page
+            canvas.rect(20, 20, width - 40, height - 40)
+
+        # Add the page border to the PDF
+        doc.build(elements, onFirstPage=add_page_border, onLaterPages=add_page_border)
 
         # Get the PDF content from the buffer
         pdf = buffer.getvalue()
         buffer.close()
 
         # Create the email for the specific student
-        email = EmailMessage(
-            subject='Your Project Allotment Details',
-            body=f"Dear {data[1][1]},\n\nPlease find attached your project allotment details.",
-            from_email='btechalloc@gmail.com',
-            to=[data[3][1]],  # Send to the student's email
-        )
 
-        # Attach the personalized PDF
-        email.attach('project_allotment.pdf', pdf, 'application/pdf')
+        subject='Your Project Allotment Details'
+        body=f"Dear {data[1][1]},\n\nPlease find attached your project allotment details."
+        to=[data[3][1]] 
 
-        email.send()
+        send_email_report(to, subject, body, pdf)
 
     messages.success(request, "Allocation reports have been sent successfully to all students."),
     return HttpResponseRedirect(reverse('create_cluster', args=(id,)))
@@ -110,13 +135,22 @@ def generate_faculty_pdf(request, id):
 
         # Get the default stylesheet and customize heading
         styles = getSampleStyleSheet()
-        heading_style = styles['Heading1'] 
-        heading_style.alignment = 1  
-        heading_style.fontSize = 24  
-        heading_style.textColor = colors.black
-
+        
         # Create the heading paragraph
-        heading = Paragraph("PROJECT ALLOCATION DETAILS", heading_style)
+        main_heading_style = styles['Heading1']
+        main_heading_style.alignment = 1  # Center alignment
+        main_heading_style.fontSize = 28  # Larger font size for the main heading
+        main_heading_style.textColor = colors.black  # Black color for the main heading
+
+        # Create the secondary heading style
+        sub_heading_style = styles['Heading1']
+        sub_heading_style.alignment = 1  # Center alignment
+        sub_heading_style.fontSize = 22  # Slightly smaller font size for the subheading
+        sub_heading_style.textColor = colors.black  # Black color for the subheading
+
+        # Create the main and sub-headings
+        main_heading = Paragraph("National Institute of Technology Surathkal", main_heading_style)
+        sub_heading = Paragraph("PROJECT ALLOCATION DETAILS", sub_heading_style)
 
         data = [
             ['Student Name', 'Branch', 'CGPA', 'Email'],  # Table header
@@ -125,7 +159,7 @@ def generate_faculty_pdf(request, id):
             data.append([student.user.get_full_name(), student.branch, student.cgpa, student.user.edu_email])
 
         # Create the table with two columns (Field and Details)
-        table = Table(data, colWidths=[2*inch]*4)
+        table = Table(data, colWidths=[1.5*inch]*4)
         
         # Define table style
         style = TableStyle([
@@ -140,29 +174,43 @@ def generate_faculty_pdf(request, id):
         ])
         table.setStyle(style)
 
+        logo = Image(logo_path, width=1.6 * inch, height=1.2 * inch)
+        
         # Build the PDF with the heading and the table
         elements = []
-        elements.append(heading)
-        elements.append(Spacer(1, 0.5*inch))  # Add some space between heading and table
+        elements.append(logo)  # Add the logo to the top left
+        elements.append(Spacer(1, 0.1 * inch))  # Add some space after the logo
+        elements.append(main_heading)  # Add the main heading
+        elements.append(Spacer(1, 0.2 * inch))  # Add some space after the main heading
+        elements.append(sub_heading)  # Add the sub-heading
+        elements.append(Spacer(1, 0.5 * inch))  # Add space between heading and table
         elements.append(table)
-        doc.build(elements)
+
+        def add_page_border(canvas, doc):
+            # Get the page width and height
+            width, height = A4
+
+            # Set the stroke color and line width
+            canvas.setStrokeColorRGB(0, 0, 0)  # Black color for the border
+            canvas.setLineWidth(2)  # Thickness of the border
+
+            # Draw the rectangle (border) around the entire page
+            canvas.rect(20, 20, width - 40, height - 40)
+
+        # Add the page border to the PDF
+        doc.build(elements, onFirstPage=add_page_border, onLaterPages=add_page_border)
 
         # Get the PDF content from the buffer
         pdf = buffer.getvalue()
         buffer.close()
 
         # Create the email for the specific student
-        email = EmailMessage(
-            subject='Major Project Allotment Details',
-            body="Respected Sir/Madam,\n\nPlease find attached the project allotment details.",
-            from_email='btechalloc@gmail.com',
-            to=[prof.edu_email],  # Send to the student's email
-        )
 
-        # Attach the personalized PDF
-        email.attach('project_allotment.pdf', pdf, 'application/pdf')
+        subject='Major Project Allotment Details'
+        body="Respected Sir/Madam,\n\nPlease find attached the project allotment details."
+        to=[prof.edu_email]
 
-        email.send()
+        send_email_report(to, subject, body, pdf)
 
     messages.success(request, "Allocation reports have been sent successfully to all faculty."),
     return HttpResponseRedirect(reverse('create_cluster', args=(id,)))
@@ -177,12 +225,22 @@ def generate_admin_pdf(request, id):
 
 
     styles = getSampleStyleSheet()
-    heading_style = styles['Heading1']
-    heading_style.alignment = 1  
-    heading_style.fontSize = 24  
-    heading_style.textColor = colors.HexColor("#2E8B57")  
+    
+    # Create the heading paragraph
+    main_heading_style = styles['Heading1']
+    main_heading_style.alignment = 1  # Center alignment
+    main_heading_style.fontSize = 28  # Larger font size for the main heading
+    main_heading_style.textColor = colors.black  # Black color for the main heading
 
-    heading = Paragraph("STUDENT PROJECT ALLOCATION DETAILS", heading_style)
+    # Create the secondary heading style
+    sub_heading_style = styles['Heading1']
+    sub_heading_style.alignment = 1  # Center alignment
+    sub_heading_style.fontSize = 22  # Slightly smaller font size for the subheading
+    sub_heading_style.textColor = colors.black  # Black color for the subheading
+
+    # Create the main and sub-headings
+    main_heading = Paragraph("National Institute of Technology Surathkal", main_heading_style)
+    sub_heading = Paragraph("PROJECT ALLOCATION DETAILS", sub_heading_style)
 
     # Prepare the data table for the PDF
     data = [
@@ -211,11 +269,31 @@ def generate_admin_pdf(request, id):
     ])
     table.setStyle(style)
 
+    logo = Image(logo_path, width=1.6 * inch, height=1.2 * inch)
+        
+    # Build the PDF with the heading and the table
     elements = []
-    elements.append(heading)
-    elements.append(Spacer(1, 0.5 * inch))  
+    elements.append(logo)  # Add the logo to the top left
+    elements.append(Spacer(1, 0.1 * inch))  # Add some space after the logo
+    elements.append(main_heading)  # Add the main heading
+    elements.append(Spacer(1, 0.2 * inch))  # Add some space after the main heading
+    elements.append(sub_heading)  # Add the sub-heading
+    elements.append(Spacer(1, 0.5 * inch))  # Add space between heading and table
     elements.append(table)
-    doc.build(elements)
+
+    def add_page_border(canvas, doc):
+        # Get the page width and height
+        width, height = A4
+
+        # Set the stroke color and line width
+        canvas.setStrokeColorRGB(0, 0, 0)  # Black color for the border
+        canvas.setLineWidth(2)  # Thickness of the border
+
+        # Draw the rectangle (border) around the entire page
+        canvas.rect(20, 20, width - 40, height - 40)
+
+    # Add the page border to the PDF
+    doc.build(elements, onFirstPage=add_page_border, onLaterPages=add_page_border)
 
     # Get the PDF content from the buffer
     pdf = buffer.getvalue()
@@ -226,16 +304,11 @@ def generate_admin_pdf(request, id):
     admin_emails = admin_role.users.values_list('edu_email', flat=True)  
 
     # Create the email
-    email = EmailMessage(
-        subject='Project Allocation Details',
-        body='Please find attached the project allocation details for all students.',
-        from_email='btechalloc@gmail.com',
-        to=list(admin_emails),  
-    )
+    subject='Project Allocation Details'
+    body='Please find attached the project allocation details for all students.'
+    to=list(admin_emails)
 
-    email.attach('project_allocation_details.pdf', pdf, 'application/pdf')
-
-    email.send()
+    send_email_report(to, subject, body, pdf)
 
     # Return a response to confirm that emails have been sent
     messages.success(request, "PDF with project allocation details has been sent to all admins."),
