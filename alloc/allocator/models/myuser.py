@@ -37,6 +37,8 @@ class MyUser(AbstractUser):
     phone_no = models.CharField(max_length=15)
     otp = models.CharField(max_length=10, blank=True, null=True)
     is_registered = models.BooleanField(default=False)
+    failed_attempts = models.IntegerField(default=0)
+    failed_blocked = models.DateTimeField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.edu_email

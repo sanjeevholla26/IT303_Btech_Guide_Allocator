@@ -11,7 +11,9 @@ from django.urls import reverse
 from django.urls import reverse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
-from alloc.settings import QUICK_LOGIN
+from alloc.settings import QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY
+from django.utils import timezone
+from datetime import timedelta
 
 import random
 
@@ -56,6 +58,30 @@ def send_to_otp(request, user, next_url):
             "edu_email": user.edu_email
         })
 
+def is_user_blocked(user):
+    if user.failed_blocked and user.failed_blocked > timezone.now():
+        return True
+    return False
+
+def failed_attempt(edu_email):
+    try:
+        user = MyUser.objects.get(edu_email=edu_email)
+        user.failed_attempts = user.failed_attempts + 1
+        user.save()
+        if user.failed_attempts >= FAILS_COUNT:
+            user.failed_blocked = timezone.now() + timedelta(minutes=FAILS_DELAY)
+            user.failed_attempts = 0
+            user.save()
+            return f"User has been blocked till {user.failed_blocked}."
+        else:
+            return f"User has {FAILS_COUNT-user.failed_attempts} login attempts left."
+    except MyUser.DoesNotExist:
+        return ""
+
+def logged_in(user):
+    user.failed_attempts = 0
+    user.save()
+
 def login_view(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
@@ -71,6 +97,9 @@ def login_view(request):
                     try:
                         user = MyUser.objects.get(edu_email=edu_email)
                         if user:
+                            if is_user_blocked(user):
+                                messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
+                                return HttpResponseRedirect(reverse(login_view))
                             if user.is_registered:
                                 return render(request, "allocator/login_password.html", {
                                     "next": next_url,
@@ -116,8 +145,12 @@ def otp(request) :
             user = MyUser.objects.get(edu_email=edu_email)
 
             if user and user.otp == otp:
+                if is_user_blocked(user):
+                    messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
+                    return HttpResponseRedirect(reverse(login_view))
                 if user.is_registered:
                     login(request, user)
+                    logged_in(user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
                     return render(request, "allocator/login_create_password.html", {
@@ -126,7 +159,7 @@ def otp(request) :
                     })
 
             else :
-                messages.error(request, "Invalid OTP. Kindly restart the login.")
+                messages.error(request, f"Invalid OTP. Kindly restart the login. {failed_attempt(edu_email)}")
                 return HttpResponseRedirect(reverse(login_view))
         else :
             return HttpResponseRedirect(reverse(login_view))
@@ -145,6 +178,12 @@ def create_password(request) :
             repassword = request.POST["repassword"]
             next_url = request.POST["next"]
             user = MyUser.objects.get(edu_email=edu_email)
+            if not user:
+                messages.error(request, "Invalid user.")
+                return HttpResponseRedirect(reverse(login_view))                
+            if is_user_blocked(user):
+                messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
+                return HttpResponseRedirect(reverse(login_view))
             if password == repassword:
                 if validatePassword(password):
                     user.otp=None
@@ -153,6 +192,7 @@ def create_password(request) :
                     user.save()
                     authenticate(request, edu_email=edu_email, password=password)
                     login(request, user)
+                    logged_in(user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
                     return render(request, "allocator/login_create_password.html", {
@@ -179,14 +219,18 @@ def complete_login(request) :
             next_url = request.POST["next"]
             user = authenticate(request, edu_email=edu_email, password=password)
             if user is not None :
+                if is_user_blocked(user):
+                    messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
+                    return HttpResponseRedirect(reverse(login_view))
                 admin_role = Role.objects.get(role_name='admin')
                 if admin_role in user.roles.all() or QUICK_LOGIN:
                     login(request, user)
+                    logged_in(user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
                     return send_to_otp(request, user, next_url)
             else:
-                messages.error(request, "Wrong Password. Kindly try again.")
+                messages.error(request, f"Wrong Password. Kindly try again. {failed_attempt(edu_email)}")
                 return HttpResponseRedirect(reverse(login_view))
 
         else :
