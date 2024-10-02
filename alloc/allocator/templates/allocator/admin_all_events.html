@@ -26,7 +26,7 @@
                 <tr>
                     <th scope="row" style="width: 3rem;">{{forloop.counter}}</th>
                     <td style="font-weight: bolder; letter-spacing: 1.5px;"><strong>{{event.event_name}}</strong></td>
-                    <td>{{event.start_datetime}} L</td>
+                    <td>{{event.start_datetime}}</td>
                     <td>{{event.end_datetime}}</td>
                     <td><a href="{% url 'create_cluster' id=event.id %}"><button class="btn btn-success">
                         View

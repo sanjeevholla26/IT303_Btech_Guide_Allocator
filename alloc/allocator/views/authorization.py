@@ -67,6 +67,7 @@ def login_view(request) :
             return render(request, "allocator/login.html")
     else :
         return HttpResponseRedirect(reverse('home'))
+    
 
 def otp(request) :
     if not request.user.is_authenticated:

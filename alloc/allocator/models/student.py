@@ -8,7 +8,6 @@ class Student(models.Model):
     branch = models.CharField(max_length=100)
     has_backlog = models.BooleanField(default=False)
 
-
     def __str__(self):
         return f'{self.user.username} - {self.branch}'
 

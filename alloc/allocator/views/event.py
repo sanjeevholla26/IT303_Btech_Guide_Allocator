@@ -139,9 +139,10 @@ def event_results(request, id):
 def add_backlog(request,id):
     if request.method=="GET":
         students=Student.objects.all()
+        backlog_students = students.filter(has_backlog=True)
         return render(request,"add_backlog.html",{
             "id":id,
-            "students":students
+            "students":backlog_students
         })
     else:
         event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
