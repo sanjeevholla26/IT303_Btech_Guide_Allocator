@@ -73,7 +73,7 @@ Event Control
 <!-- Backlog Students Section -->
 {% if backlog %}
 <h1>Backlog Students</h1>
-<form action="{% url 'allot_backlog' id=event.id %}" method="post">
+<form action="{% url 'allot_backlog' id=id %}" method="post">
     {% csrf_token %}
     <table border="1" class="table table-striped">
         <thead>
@@ -89,9 +89,11 @@ Event Control
                 <td>{{ choice.student.user.edu_email }}</td>
                 <td>{{ choice.student.cgpa }}</td>
                 <td>
+                    <!-- Hidden input to store the student ID -->
+                    <input type="hidden" name="student_{{ choice.id }}" value="{{ choice.student.user.id }}">
                     {% for preference in choice.preference_list %}
                     <div>
-                        <input type="radio" name="choice_{{ choice.id }}" value="{{ preference.facultyID }}" id="pref_{{ choice.id }}_{{ forloop.counter }}">
+                        <input type="radio" name="faculty_{{ choice.id }}" value="{{ preference.facultyID }}" id="pref_{{ choice.id }}_{{ forloop.counter }}">
                         <label for="pref_{{ choice.id }}_{{ forloop.counter }}">
                             {{ preference.choiceNo }}: {{ preference.facultyID }}
                         </label>
