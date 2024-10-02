@@ -24,8 +24,8 @@
                 <input type="datetime-local" class="form-control" id="end_datetime" name="end_datetime" required>
             </div>
             <div class="form-group">
-                <label for="faculties">Select Backlog Students</label>
-                <select id="faculties" class="form-control" name="students" multiple required>
+                <label for="students">Select Backlog Students</label>
+                <select id="students" class="form-control" name="students" multiple required>
                     {% for student in students %}
                     <option value="{{student.user.id}}">{{ student.user }}</option>
                     {% endfor %}
