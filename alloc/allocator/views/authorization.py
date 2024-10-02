@@ -12,7 +12,7 @@ from django.urls import reverse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
 
-QUICK_LOGIN = True
+QUICK_LOGIN = False
 
 import random
 
@@ -45,6 +45,18 @@ def generate_captcha():
         result = CaptchaStore.objects.get(hashkey=captcha_key).response
     return [captcha_key, captcha_image, result]
 
+def send_to_otp(request, user, next_page):
+    user.otp = None
+    user.save()
+    user.otp = generate_otp()
+    user.save()
+    send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+    return render(request, "allocator/login_otp.html", {
+            "message": "OTP has been sent to your email. Please enter it below.",
+            "next": next_page,
+            "edu_email": user.edu_email
+        })
+
 def login_view(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
@@ -67,16 +79,13 @@ def login_view(request):
                                     "edu_email": edu_email
                                 })
                             else:
-                                user.otp = None
-                                user.save()
-                                user.otp = generate_otp()
-                                user.save()
-                                send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
-                                return render(request, "allocator/login_otp.html", {
-                                    "message": "OTP has been sent to your email. Please enter it below.",
-                                    "next": next_page,
-                                    "edu_email": edu_email
-                                })
+                                if user.is_registered:
+                                    return render(request, "allocator/login_password.html", {
+                                        "next": next_page,
+                                        "edu_email": edu_email
+                                    })
+                                else:
+                                    return send_to_otp(request, user, next_page)
                         else:
                             return render(request, "allocator/login.html", {
                                 "message": "Invalid username.",
@@ -115,10 +124,12 @@ def otp(request) :
 
             if user and user.otp == otp:
                 if user.is_registered:
-                    return render(request, "allocator/login_password.html", {
-                        "next": next,
-                        "edu_email": edu_email
-                    })
+                    login(request, user)
+                    return HttpResponseRedirect(next if next else reverse('home'))
+                    # return render(request, "allocator/login_password.html", {
+                    #     "next": next,
+                    #     "edu_email": edu_email
+                    # })
                 else:
                     return render(request, "allocator/login_create_password.html", {
                         "next": next,
@@ -187,16 +198,12 @@ def complete_login(request) :
             password = request.POST["password"]
             next_url = request.POST["next"]
             user = authenticate(request, edu_email=edu_email, password=password)
-
             if user is not None :
-                login(request, user)
-                user.otp=None
-                user.save()
-                return HttpResponseRedirect(next_url if next_url else reverse('home'))
-                # if(next_url==''):
-                #     return HttpResponseRedirect(reverse(home))
-                # else:
-                #     return HttpResponseRedirect(next_url)
+                if not QUICK_LOGIN:
+                    return send_to_otp(request, user, next_url)
+                else:
+                    login(request, user)
+                    return HttpResponseRedirect(next_url if next_url else reverse('home'))
             else:
                 ############################## Need to change this #######################################
                 return render(request, "allocator/login.html", {
