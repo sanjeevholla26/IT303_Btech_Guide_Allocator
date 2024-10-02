@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.urls import reverse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
-from alloc.settings import QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY
+from alloc.settings import ADMIN_BYPASS, QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY
 from django.utils import timezone
 from datetime import timedelta
 
@@ -224,7 +224,7 @@ def complete_login(request) :
                     messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
                     return HttpResponseRedirect(reverse(login_view))
                 admin_role = Role.objects.get(role_name='admin')
-                if admin_role in user.roles.all() or QUICK_LOGIN:
+                if (ADMIN_BYPASS and admin_role in user.roles.all()) or QUICK_LOGIN:
                     login(request, user)
                     logged_in(user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
