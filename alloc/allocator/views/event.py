@@ -6,6 +6,9 @@ from ..models import AllocationEvent, Faculty
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
+import logging
+
+logger = logging.getLogger('django')
 
 
 @authorize_resource
@@ -19,6 +22,7 @@ def add_event(request):
         branch = request.POST.get("branch")
         faculties = request.POST.getlist("faculties")
         AllocationEvent.objects.create_event(user=user, name=name, start_datetime=start_datetime, end_datetime=end_datetime, batch=batch, branch=branch, faculties=faculties)
+        logger.info(f"User: Admin created event {name}")
         # new_event = AllocationEvent(
         #     owner=user,  # Set the owner to the current user
         #     event_name=name,
@@ -45,6 +49,7 @@ def edit_event(request, id):
     event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
     if request.method == 'POST':
         AllocationEvent.objects.update_event(event=event, name=request.POST.get('name'), start_datetime=request.POST.get('start_datetime'), end_datetime=request.POST.get('end_datetime'), batch=request.POST.get('batch'), branch=request.POST.get('branch'), faculties=request.POST.getlist('faculties'))
+        logger.info(f"User: Admin updated event {request.POST.get('name')}")
         # Handle form submission
         # event.event_name = request.POST.get('name')
         # event.start_datetime = request.POST.get('start_datetime')

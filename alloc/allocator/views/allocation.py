@@ -5,6 +5,10 @@ from ..decorators import authorize_resource
 from ..models import AllocationEvent, ChoiceList, Clashes
 from ..allocation_function import allocate
 
+import logging
+
+logger = logging.getLogger('django')
+
 @authorize_resource
 def create_cluster(request, id):
     get_event = AllocationEvent.objects.get(id=id)
@@ -26,6 +30,7 @@ def create_cluster(request, id):
             # choice.save()
 
         AllocationEvent.objects.update_event(get_event,cluster_count=max_cluster_num)
+        logger.info(f"Admin created cluster for event : {get_event.event_name}")
         # get_event.cluster_count = max_cluster_num
         # get_event.save()
 
@@ -49,6 +54,8 @@ def create_cluster(request, id):
 def run_allocation(request, id):
     if request.method == "POST":
         allocate(id)
+        get_event = AllocationEvent.objects.get(id=id)
+        logger.info(f"Admin started allocation for event : {get_event.event_name}")
         return HttpResponseRedirect(reverse(create_cluster, args=(id, )))
     else:
         return HttpResponseRedirect(reverse('home'))
@@ -67,6 +74,7 @@ def reset_allocation(request, id):
         for c in clashes:
             c.is_processed = True
             c.save()
+        logger.info(f"Admin reset allocation for event : {get_event.event_name}")
         return HttpResponseRedirect(reverse(create_cluster, args=(id, )))
     else:
         return HttpResponseRedirect(reverse('home'))

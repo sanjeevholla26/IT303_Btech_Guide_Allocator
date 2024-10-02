@@ -4,6 +4,10 @@ from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import MyUser, Role, Faculty
 
+import logging
+
+logger = logging.getLogger('django')
+
 @authorize_resource
 def add_faculty(request):
     if request.method == "POST":
@@ -12,6 +16,8 @@ def add_faculty(request):
         abbreviation = request.POST["abbreviation"]
 
         Faculty.objects.create_faculty(user=user, abbreviation=abbreviation)
+
+        logger.info(f"User: {user.username} added as Faculty")
 
         # new_faculty = Faculty(
         #     user = user,

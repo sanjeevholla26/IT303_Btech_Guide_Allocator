@@ -8,9 +8,6 @@ class StudentManager(models.Manager):
         if not user or cgpa is None or academic_year is None or not branch:
             raise ValueError("All fields (user, cgpa, academic year, and branch) are required.")
 
-        # Ensure cgpa is within valid range (optional, if you want validation here)
-        if not (0.0 <= cgpa <= 10.0):
-            raise ValueError("CGPA must be between 0.0 and 10.0.")
 
         student = self.create(
             user=user,
@@ -32,8 +29,6 @@ class StudentManager(models.Manager):
 
         # Update fields if provided
         if cgpa is not None:
-            if not (0.0 <= cgpa <= 10.0):
-                raise ValueError("CGPA must be between 0.0 and 10.0.")
             student.cgpa = cgpa
 
         if academic_year is not None:

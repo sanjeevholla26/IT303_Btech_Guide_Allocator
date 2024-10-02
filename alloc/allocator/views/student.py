@@ -3,6 +3,11 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import MyUser, Student, Role
+
+import logging
+
+logger = logging.getLogger('django')
+
 @authorize_resource
 def add_student(request):
     if request.method == "POST":
@@ -13,6 +18,7 @@ def add_student(request):
         branch = request.POST["branch"]
 
         Student.objects.create_student(user=user, cgpa=cgpa, academic_year=academic_year, branch=branch)
+        logger.info(f"User: {user.username} added as Student")
         # new_student = Student(
         #     user = user,
         #     cgpa = cgpa,

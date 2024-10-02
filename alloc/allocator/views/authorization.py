@@ -10,6 +10,10 @@ from django.contrib.auth import authenticate, login, logout
 
 import random
 
+import logging
+
+logger = logging.getLogger('django')
+
 
 @authorize_resource
 def register(request):
@@ -21,7 +25,9 @@ def register(request):
         try:
             user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
             user.save()
+            logger.info(f"User: {user.username} registered")
         except IntegrityError as e:
+            logger.exception(f"User: {user.username} already registered")
             messages.error(request, "Roll number already exists.")
             return HttpResponseRedirect(reverse('register'))
 
@@ -42,22 +48,22 @@ def login_view(request) :
 
             if user:
                 admin_role = Role.objects.get(role_name='admin')
-                # if admin_role in user.roles.all():
-                return render(request, "allocator/login_password.html", {
-                "next": next,
-                "edu_email": edu_email
-                })
-                # else:
-                #     user.otp=None
-                #     user.save()
-                #     user.otp=generate_otp()
-                #     user.save()
-                #     send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
-                #     return render(request, "allocator/login_otp.html", {
-                #         "message" : "OTP has been sent to your email. Please enter it below.",
-                #         "next": next,
-                #         "edu_email": edu_email
-                #     })
+                if admin_role in user.roles.all():
+                    return render(request, "allocator/login_password.html", {
+                    "next": next,
+                    "edu_email": edu_email
+                    })
+                else:
+                    user.otp=None
+                    user.save()
+                    user.otp=generate_otp()
+                    user.save()
+                    send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+                    return render(request, "allocator/login_otp.html", {
+                        "message" : "OTP has been sent to your email. Please enter it below.",
+                        "next": next,
+                        "edu_email": edu_email
+                    })
             else :
                 return render(request, "allocator/login.html", {
                     "message" : "Invalid username."
@@ -147,6 +153,7 @@ def complete_login(request) :
                 login(request, user)
                 user.otp=None
                 user.save()
+                logger.info(f"User: {user.username} logged in")
                 return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 # if(next_url==''):
                 #     return HttpResponseRedirect(reverse(home))
@@ -154,6 +161,7 @@ def complete_login(request) :
                 #     return HttpResponseRedirect(next_url)
             else:
                 ############################## Need to change this #######################################
+                logger.exception(f"IP: {request.META.get('REMOTE_ADDR')} failed to login")
                 return render(request, "allocator/login.html", {
                     "message" : "Invalid login attempt. Kindly try again.",
                     "next": next_url
@@ -169,5 +177,6 @@ def complete_login(request) :
 
 def logout_view(request) :
     if request.user.is_authenticated:
+            logger.info(f"User: {request.user.username} logged out")
             logout(request)
             return HttpResponseRedirect(reverse('login'))
