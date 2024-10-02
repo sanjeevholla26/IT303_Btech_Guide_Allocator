@@ -6,7 +6,6 @@ from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import MyUser, Student, Role
 
-
 @authorize_resource
 def add_student(request):
     if request.method == "POST":
@@ -38,7 +37,7 @@ def add_student(request):
         return HttpResponseRedirect(reverse('home'))
 
     else:
-        all_users = MyUser.objects.all()
+        new_student = MyUser.objects.exclude(student__isnull=False).exclude(faculty__isnull=False)
         return render(request, "allocator/add_student.html", {
-            "users": all_users
+            "users": new_student
         })

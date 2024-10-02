@@ -30,5 +30,7 @@ urlpatterns = [
     path("generate_student_pdf/<int:id>", views.generate_student_pdf, name="generate_student_pdf"),
     path("generate_faculty_pdf/<int:id>", views.generate_faculty_pdf, name="generate_faculty_pdf"),
     path("generate_admin_pdf/<int:id>", views.generate_admin_pdf, name="generate_admin_pdf"),
+    path("add_backlog/<int:id>",views.add_backlog,name="add_backlog"),
+    path("allot_backlog/<int:id>",views.allot_backlog,name="allot_backlog"),
     path('captcha/', include('captcha.urls')),
 ]

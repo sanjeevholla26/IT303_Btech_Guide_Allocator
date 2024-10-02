@@ -2,9 +2,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..decorators import authorize_resource
-from ..models import AllocationEvent, Faculty
+from ..models import AllocationEvent, Faculty,Student
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from django.utils import timezone
+
 
 
 
@@ -64,17 +66,30 @@ def edit_event(request, id):
 
 
 @authorize_resource
-def all_events(request):
+def all_events(request): # needs changes
     if request.method == "GET":
-        active_events = AllocationEvent.active_events()
+        # active_events = AllocationEvent.active_events()
+        active_events = AllocationEvent.objects.all()
         user_branch = request.user.student.branch
         user_batch = request.user.student.academic_year
+        user_backlog=request.user.student.has_backlog
+        student=request.user.student
+        if user_backlog is False:
+            eligible_events = active_events.filter(eligible_batch=user_batch, eligible_branch=user_branch)
 
-        eligible_events = active_events.filter(eligible_batch=user_batch, eligible_branch=user_branch)
+            return render(request, "allocator/all_events.html", {
+                "events" : eligible_events
+            })
+        else:
+            eligible_events=active_events.filter(for_backlog=True)
+            res=[]
+            for event in eligible_events:
+                if event.eligible_students.filter(pk=student.pk).exists():  # Check if student is in eligible_students
+                    res.append(event)
 
-        return render(request, "allocator/all_events.html", {
-            "events" : eligible_events
-        })
+            return render(request, "allocator/all_events.html", {
+                "events" : res
+            })
     else:
         return HttpResponseRedirect(reverse('home'))
 
@@ -83,6 +98,10 @@ def all_events(request):
 def admin_all_events(request):
     if request.method == "GET":
         all_events = AllocationEvent.objects.all()
+        now = timezone.now()  # Get the current time
+        # Create a list of booleans where True means the event is active (before end_datetime)
+        for event in all_events:
+            event.is_active = event.end_datetime >= now
         return render(request, "allocator/admin_all_events.html", {
             "events" : all_events,
         })
@@ -115,3 +134,21 @@ def event_results(request, id):
     else:
         messages.error(request, "Invalid request method")
         return HttpResponseRedirect(reverse('home'))
+
+def add_backlog(request,id):
+    if request.method=="GET":
+        students=Student.objects.all()
+        backlog_students = students.filter(has_backlog=True)
+        return render(request,"add_backlog.html",{
+            "id":id,
+            "students":backlog_students
+        })
+    else:
+        event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
+        students = request.POST.getlist("students")
+        event.start_datetime = request.POST.get('start_datetime')
+        event.end_datetime = request.POST.get('end_datetime')
+        event.for_backlog=True
+        event.eligible_students.set(students)
+        event.save()
+        return redirect('home')  # Redirect to a success page or home

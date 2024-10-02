@@ -135,6 +135,7 @@ def login_view(request):
             })
     else:
         return HttpResponseRedirect(reverse('home'))
+    
 
 def otp(request) :
     if not request.user.is_authenticated:
