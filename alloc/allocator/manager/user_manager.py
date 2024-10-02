@@ -1,5 +1,8 @@
+#Copy with the model to avoid circular dependency : Role->MyUser->Manger->Role
+
+
 from django.contrib.auth.models import BaseUserManager
-# from allocator.models.role import Role
+from allocator.models.role import Role
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, edu_email, email, username, password=None, **extra_fields):
@@ -40,9 +43,9 @@ class CustomUserManager(BaseUserManager):
         # Create superuser and assign them the admin role
         created_user = self.create_user(edu_email, "default@gmail.com", username, password, **extra_fields)
 
-        # # Assign 'admin' role
-        # admin_role, created = Role.objects.get_or_create(role_name="admin")
-        # admin_role.users.add(created_user)
-        # admin_role.save()
+        # Assign 'admin' role
+        admin_role, created = Role.objects.get_or_create(role_name="admin")
+        admin_role.users.add(created_user)
+        admin_role.save()
 
         return created_user

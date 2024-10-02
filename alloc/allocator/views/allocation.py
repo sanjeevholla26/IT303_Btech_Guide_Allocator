@@ -21,8 +21,9 @@ def create_cluster(request, id):
             # Calculate the cluster number (integer division)
             cluster_no = (i // total_profs) + 1
             max_cluster_num = max(max_cluster_num, cluster_no)
-            choice.cluster_number = cluster_no
-            choice.save()
+            ChoiceList.objects.update_choice_list(choice_list=choice,cluster_number=cluster_no)
+            # choice.cluster_number = cluster_no
+            # choice.save()
 
         AllocationEvent.objects.update_event(get_event,cluster_count=max_cluster_num)
         # get_event.cluster_count = max_cluster_num

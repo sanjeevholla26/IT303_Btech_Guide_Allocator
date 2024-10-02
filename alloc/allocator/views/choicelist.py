@@ -24,21 +24,24 @@ def create_or_edit_choicelist(request, id):
                         preference_list.append({"choiceNo": i, "facultyID": faculty_id})
                 try:
                     get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
-                    get_prev_choice.preference_list = preference_list
-                    get_prev_choice.save()
+                    ChoiceList.objects.update_choice_list(choice_list=get_prev_choice,preference_list=preference_list)
+                    # get_prev_choice.preference_list = preference_list
+                    # get_prev_choice.save()
                 except ChoiceList.DoesNotExist:
-                    choice_list = ChoiceList.objects.create(
-                        event=e,
-                        student=request.user.student,
-                        preference_list=preference_list,
-                        cluster_number=1  # Set this based on your logic
-                    )
+                    ChoiceList.objects.create_choice_list(event=e,student=request.user.student,preference_list=preference_list,cluster_number=1)
+                    # choice_list = ChoiceList.objects.create(
+                    #     event=e,
+                    #     student=request.user.student,
+                    #     preference_list=preference_list,
+                    #     cluster_number=1  # Set this based on your logic
+                    # )
                 return HttpResponseRedirect(reverse('events'))
             else:
                 curr_student = Student.objects.get(user=request.user)
                 get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
-                get_prev_choice.is_locked=True
-                get_prev_choice.save()
+                ChoiceList.objects.update_choice_list(choice_list=get_prev_choice,is_locked=True)
+                # get_prev_choice.is_locked=True
+                # get_prev_choice.save()
                 return HttpResponseRedirect(reverse('events'))
         else:
             preference_range = range(1, e.eligible_faculties.count() + 1)

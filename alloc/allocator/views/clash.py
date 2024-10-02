@@ -52,8 +52,9 @@ def resolve_clash(request, id):
         user = MyUser.objects.get(id=get_user_id)
         selected_student = Student.objects.get(user=user)
 
-        clash.selected_student = selected_student
-        clash.save()
+        Clashes.objects.update_clash(clash=clash,selected_student = selected_student)
+        # clash.selected_student = selected_student
+        # clash.save()
         allocate(clash.event.id)
         return HttpResponseRedirect(reverse(show_all_clashes))
 
@@ -80,7 +81,8 @@ def admin_resolve_clash(request, id):
 
     selected_student = students.order_by('-cgpa').first()
 
-    clash.selected_student = selected_student
-    clash.save()
+    Clashes.objects.update_clash(clash=clash,selected_student = selected_student)
+    # clash.selected_student = selected_student
+    # clash.save()
     allocate(clash.event.id)
     return HttpResponseRedirect(reverse(admin_show_clash))

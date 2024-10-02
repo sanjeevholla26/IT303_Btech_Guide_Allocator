@@ -12,13 +12,14 @@ def add_student(request):
         academic_year = request.POST["aca_year"]
         branch = request.POST["branch"]
 
-        new_student = Student(
-            user = user,
-            cgpa = cgpa,
-            academic_year = academic_year,
-            branch = branch
-        )
-        new_student.save()
+        Student.objects.create_student(user=user, cgpa=cgpa, academic_year=academic_year, branch=branch)
+        # new_student = Student(
+        #     user = user,
+        #     cgpa = cgpa,
+        #     academic_year = academic_year,
+        #     branch = branch
+        # )
+        # new_student.save()
 
         student_role, created = Role.objects.get_or_create(role_name="student")
         student_role.users.add(user)

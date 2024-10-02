@@ -11,11 +11,13 @@ def add_faculty(request):
         user = MyUser.objects.get(id=user_id)
         abbreviation = request.POST["abbreviation"]
 
-        new_faculty = Faculty(
-            user = user,
-            abbreviation = abbreviation
-        )
-        new_faculty.save()
+        Faculty.objects.create_faculty(user=user, abbreviation=abbreviation)
+
+        # new_faculty = Faculty(
+        #     user = user,
+        #     abbreviation = abbreviation
+        # )
+        # new_faculty.save()
 
         faculty_role, created = Role.objects.get_or_create(role_name="faculty")
         faculty_role.users.add(user)
