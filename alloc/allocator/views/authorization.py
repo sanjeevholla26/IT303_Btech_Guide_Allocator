@@ -130,16 +130,10 @@ def otp(request) :
                     })
 
             else :
-                return render(request, "allocator/login.html", {
-                    "message" : "Invalid OTP. Kindly restart the login.",
-                    "next": next_url,
-                    "captcha": generate_captcha(),
-                })
-
+                messages.error(request, "Invalid OTP. Kindly restart the login.")
+                return HttpResponseRedirect(reverse(login_view))
         else :
-            return render(request, "allocator/login.html", {
-                "captcha": generate_captcha(),
-            })
+            return HttpResponseRedirect(reverse(login_view))
     else :
         return HttpResponseRedirect(reverse('home'))
 
@@ -165,21 +159,19 @@ def create_password(request) :
                     login(request, user)
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
-                    return render(request, "allocator/login.html", {
+                    return render(request, "allocator/login_create_password.html", {
                         "message" : "Invalid password format. Kindly read the rules and try again.",
                         "next": next_url,
-                        "captcha": generate_captcha(),
+                        "edu_email": edu_email
                     })
-            else:
-                return render(request, "allocator/login.html", {
-                    "message" : "Passwords don't match. Kindly try again.",
+            else:            
+                return render(request, "allocator/login_create_password.html", {
+                    "message" : "Passwords don't match.",
                     "next": next_url,
-                    "captcha": generate_captcha(),
+                    "edu_email": edu_email
                 })
         else :
-            return render(request, "allocator/login.html",{
-                "captcha": generate_captcha(),
-            })
+            return HttpResponseRedirect(reverse(login_view))
     else :
         return HttpResponseRedirect(reverse('home'))
 
@@ -198,19 +190,11 @@ def complete_login(request) :
                 else:
                     return send_to_otp(request, user, next_url)
             else:
-                ############################## Need to change this #######################################
-                return render(request, "allocator/login.html", {
-                    "message" : "Invalid login attempt. Kindly try again.",
-                    "next": next_url,
-                    "captcha": generate_captcha(),
-                })
-                # messages.error(request, "Invalid login attempt. Kindly try again.")
-                # return HttpResponseRedirect(reverse(login_view))
+                messages.error(request, "Wrong Password. Kindly try again.")
+                return HttpResponseRedirect(reverse(login_view))
 
         else :
-            return render(request, "allocator/login.html", {
-                "captcha": generate_captcha(),
-            })
+            return HttpResponseRedirect(reverse(login_view))
     else :
         return HttpResponseRedirect(reverse('home'))
 
