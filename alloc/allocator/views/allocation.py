@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from ..decorators import authorize_resource
-from ..models import AllocationEvent, ChoiceList, Clashes
+from ..models import AllocationEvent, ChoiceList, Clashes,Faculty
 from ..allocation_function import allocate
 
 @authorize_resource
