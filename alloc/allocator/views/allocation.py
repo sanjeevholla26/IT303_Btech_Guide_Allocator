@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import AllocationEvent, ChoiceList, Clashes,Faculty
@@ -90,7 +90,10 @@ def reset_allocation(request, id):
     else:
         return HttpResponseRedirect(reverse('home'))
     
-def allot_backlog(request,id):
+
+def allot_backlog(request, id):
+    event = get_object_or_404(AllocationEvent, id=id)
+
     if request.method == "POST":
         students = []
         faculties = []
@@ -108,16 +111,13 @@ def allot_backlog(request,id):
                     students.append(int(student_id))
                     faculties.append(int(faculty_id))
         
-        # Now process the collected student and faculty data
-        event = AllocationEvent.objects.get(id=id)
+        # Process the collected student and faculty data
         for student_id, faculty_id in zip(students, faculties):
             choice = ChoiceList.objects.get(student_id=student_id, event=event)
             
-            # Find the corresponding faculty where faculty.user.id == faculty_id
+            # Find the corresponding faculty
             try:
-                faculty = Faculty.objects.get(user__id=faculty_id)  # Fetch faculty using user ID
-
-                # Set the current allocation for the student to the faculty
+                faculty = Faculty.objects.get(user__id=faculty_id)
                 choice.current_allocation = faculty
                 choice.save()
             except Faculty.DoesNotExist:
@@ -125,3 +125,15 @@ def allot_backlog(request,id):
 
         # After saving the data, redirect to a success page or home
         return redirect('home')  # Redirect to the appropriate view after processing
+
+    else:
+        event = AllocationEvent.objects.get(id=id)
+        backlog_alloted = ChoiceList.objects.filter(event=event)
+
+        # Prepare the faculty abbreviations for the template
+        faculty_abbreviations = [faculty.abbreviation for faculty in Faculty.objects.all()]
+
+        return render(request, 'create_cluster.html', {
+            'backlog_alloted': backlog_alloted,
+            'faculty_abbreviations': faculty_abbreviations,  # Include all faculty abbreviations
+        })

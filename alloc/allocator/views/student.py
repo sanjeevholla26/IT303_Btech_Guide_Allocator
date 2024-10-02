@@ -21,12 +21,14 @@ def add_student(request):
         
         cgpa = request.POST["cgpa"]
         academic_year = request.POST["aca_year"]
-        branch = request.POST["branch"]        
+        branch = request.POST["branch"] 
+        has_backlog = request.POST.get("has_backlog") == 'true'
         new_student = Student(
             user = user,
             cgpa = cgpa,
             academic_year = academic_year,
-            branch = branch
+            branch = branch,
+            has_backlog = has_backlog
         )
         new_student.save()
 
