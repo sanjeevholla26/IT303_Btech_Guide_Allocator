@@ -4,6 +4,7 @@ from .faculty import Faculty
 from .student import Student
 from django.utils.timezone import now
 
+from allocator.manager.clash_manager import ClashesManager
 
 class Clashes(models.Model):
     event = models.ForeignKey(AllocationEvent, on_delete=models.CASCADE)
@@ -14,6 +15,8 @@ class Clashes(models.Model):
     selected_student = models.ForeignKey(Student, null=True, blank=True, on_delete=models.SET_NULL)
     created_datetime = models.DateTimeField(default=now)
     is_processed = models.BooleanField(default=False)
+
+    objects=ClashesManager()
 
     def __str__(self):
         return f'Clash in {self.event.event_name} - Cluster {self.cluster_id}'
