@@ -4,11 +4,11 @@
 
 1. Roles - admin
    
-   actions - login,home,register,add_student,add_event,edit_event,add_faculty,admin_all_events,create_cluster,run_allocation,reset_allocation,admin_show_clash,admin_resolve_clash,add_permissions,generate_pdf,event_results,logout_view
+   actions - login,home,register,add_student,add_event,edit_event,add_faculty,admin_all_events,create_cluster,run_allocation,reset_allocation,admin_show_clash,admin_resolve_clash,add_permissions,generate_student_pdf,generate_faculty_pdf,generate_admin_pdf,event_results,logout_view
 
 3. Roles - Student
    
-   actions - all_events,event,logout_view
+   actions - all_events,event,create_or_edit_choicelist,choice_lock_otp,logout_view
 
 5. Roles - Faculty
    

@@ -1,9 +1,16 @@
 from django.http import HttpResponseRedirect
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.contrib.auth import logout
 from ..decorators import authorize_resource
 from ..models import AllocationEvent, Faculty, Student, ChoiceList, MyUser
 from ..email_sender import send_mail_page
+from .home import home
+import logging
+import random
+
+logger = logging.getLogger('django')
 
 def choice_locking_message(choice):
     message = "Dear student,\n"
@@ -15,13 +22,44 @@ def choice_locking_message(choice):
     message = message + f"\nYou have successfully locked the below choices for the event {choice.event.event_name}:\n{preferences}\nWe wish you the best for your allocations."
     message = message + "\nThank you,\nBTech Major Project Allocation Team"
     return message
+
+def generate_otp():
+    return random.randint(100000, 999999)    
+
+def send_to_otp(user):
+    print(user.edu_email)
+    user.otp = None
+    user.save()
+    user.otp = generate_otp()
+    user.save()
+    send_mail_page(user.edu_email, 'Choice Locking OTP', f"Dear User,\nYour Choice Locking OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+
+@authorize_resource
+def choice_lock_otp(request, id):
+    if request.user.is_authenticated:
+        if request.method == "POST" :
+            user = request.user
+            choice = ChoiceList.objects.get(id=id)
+            otp = request.POST["otp_entry"]
+            if user and user.otp == otp:
+                # send_mail_page(user.edu_email, "Choice Locking", choice_locking_message(choice))     
+
+                ChoiceList.objects.update_choice_list(choice_list=choice,is_locked=True)
+                logger.info(f"User: {user.username} locked choices as {choice.preference_list}")
+                # get_prev_choice.is_locked=True
+                # get_prev_choice.save()
+                send_mail_page(user.edu_email, "Choice Locking", choice_locking_message(choice))
+                messages.error(request, "Your choices have been locked.")
+                return HttpResponseRedirect(reverse('create_or_edit_choicelist', args=(choice.event.id,)))
+            else :
+                messages.error(request, f"Invalid OTP.")
+                logout(request)
+                return HttpResponseRedirect(reverse(home))
+        else :
+            return HttpResponseRedirect(reverse(home))
+    else :
+        return HttpResponseRedirect(reverse(home))
     
-
-import logging
-
-logger = logging.getLogger('django')
-
-# @authorize_resource
 @authorize_resource
 def create_or_edit_choicelist(request, id):
     e = AllocationEvent.objects.get(id=id)
@@ -58,15 +96,10 @@ def create_or_edit_choicelist(request, id):
                 return HttpResponseRedirect(reverse('events'))
             else:
                 curr_student = Student.objects.get(user=request.user)
-                get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
-
-                ChoiceList.objects.update_choice_list(choice_list=get_prev_choice,is_locked=True)
-                logger.info(f"User: {curr_student.user.username} locked choices as {get_prev_choice.preference_list}")
-                # get_prev_choice.is_locked=True
-                # get_prev_choice.save()
-                send_mail_page(curr_student.user.edu_email, "Choice Locking", choice_locking_message(get_prev_choice))
-  
-                return HttpResponseRedirect(reverse('events'))
+                choice = ChoiceList.objects.get(event=e, student=curr_student)
+                send_to_otp(request.user)
+                messages.error(request, f"OTP has been mailed.")
+                return render(request, "choice_lock_otp.html", {'id': choice.id})
         else:
             preference_range = range(1, e.eligible_faculties.count() + 1)
             curr_student = Student.objects.get(user=request.user)

@@ -108,7 +108,8 @@ def generate_student_pdf(request, id):
         body=f"Dear {data[1][1]},\n\nPlease find attached your project allotment details."
         to=[data[3][1]] 
 
-        send_email_report(to, subject, body, pdf)
+        # send_email_report(to, subject, body, pdf)
+        send_email_report.delay(to, subject, body, pdf)
 
     messages.success(request, "Allocation reports have been sent successfully to all students."),
     return HttpResponseRedirect(reverse('create_cluster', args=(id,)))
@@ -210,7 +211,8 @@ def generate_faculty_pdf(request, id):
         body="Respected Sir/Madam,\n\nPlease find attached the project allotment details."
         to=[prof.edu_email]
 
-        send_email_report(to, subject, body, pdf)
+        # send_email_report(to, subject, body, pdf)
+        send_email_report.delay(to, subject, body, pdf)
 
     messages.success(request, "Allocation reports have been sent successfully to all faculty."),
     return HttpResponseRedirect(reverse('create_cluster', args=(id,)))
@@ -308,7 +310,8 @@ def generate_admin_pdf(request, id):
     body='Please find attached the project allocation details for all students.'
     to=list(admin_emails)
 
-    send_email_report(to, subject, body, pdf)
+    # send_email_report(to, subject, body, pdf)
+    send_email_report.delay(to, subject, body, pdf)
 
     # Return a response to confirm that emails have been sent
     messages.success(request, "PDF with project allocation details has been sent to all admins."),

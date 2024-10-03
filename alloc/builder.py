@@ -5,8 +5,8 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'alloc.settings')  # Ensure this is correct
 django.setup()
 
-admin_perms = "login,home,register,add_student,add_event,edit_event,add_faculty,admin_all_events,create_cluster,run_allocation,reset_allocation,admin_show_clash,admin_resolve_clash,add_permissions,generate_pdf,event_results,logout_view"
-student_perms = "all_events,event,logout_view"
+admin_perms = "login,home,register,add_student,add_event,edit_event,add_faculty,admin_all_events,create_cluster,run_allocation,reset_allocation,admin_show_clash,admin_resolve_clash,add_permissions,generate_student_pdf,generate_faculty_pdf,generate_admin_pdf,event_results,logout_view"
+student_perms = "all_events,event,create_or_edit_choicelist,choice_lock_otp,logout_view"
 faculty_perms = "show_all_clashes,resolve_clash,eligible_events,logout_view,event_results"
 
 app_name = 'allocator'
