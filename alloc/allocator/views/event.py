@@ -8,6 +8,9 @@ from django.contrib import messages
 from django.utils import timezone
 
 
+import logging
+
+logger = logging.getLogger('django')
 
 
 @authorize_resource
@@ -20,19 +23,21 @@ def add_event(request):
         batch = request.POST.get("batch")
         branch = request.POST.get("branch")
         faculties = request.POST.getlist("faculties")
-        new_event = AllocationEvent(
-            owner=user,  # Set the owner to the current user
-            event_name=name,
-            start_datetime=start_datetime,
-            end_datetime=end_datetime,
-            eligible_batch=batch,
-            eligible_branch=branch
-        )
+        AllocationEvent.objects.create_event(user=user, name=name, start_datetime=start_datetime, end_datetime=end_datetime, batch=batch, branch=branch, faculties=faculties)
+        logger.info(f"User: Admin created event {name}")
+        # new_event = AllocationEvent(
+        #     owner=user,  # Set the owner to the current user
+        #     event_name=name,
+        #     start_datetime=start_datetime,
+        #     end_datetime=end_datetime,
+        #     eligible_batch=batch,
+        #     eligible_branch=branch
+        # )
 
-        new_event.save()  # Save the AllocationEvent instance first to get an ID
+        # new_event.save()  # Save the AllocationEvent instance first to get an ID
 
-        # Now add the selected faculties to the ManyToMany field
-        new_event.eligible_faculties.set(faculties)  # Set the ManyToMany relationship
+        # # Now add the selected faculties to the ManyToMany field
+        # new_event.eligible_faculties.set(faculties)  # Set the ManyToMany relationship
 
         return HttpResponseRedirect(reverse('home'))  # Redirect after saving
     else:
@@ -45,16 +50,18 @@ def add_event(request):
 def edit_event(request, id):
     event = get_object_or_404(AllocationEvent, id=id)  # Get the event instance
     if request.method == 'POST':
+        AllocationEvent.objects.update_event(event=event, name=request.POST.get('name'), start_datetime=request.POST.get('start_datetime'), end_datetime=request.POST.get('end_datetime'), batch=request.POST.get('batch'), branch=request.POST.get('branch'), faculties=request.POST.getlist('faculties'))
+        logger.info(f"User: Admin updated event {request.POST.get('name')}")
         # Handle form submission
-        event.event_name = request.POST.get('name')
-        event.start_datetime = request.POST.get('start_datetime')
-        event.end_datetime = request.POST.get('end_datetime')
-        event.eligible_batch = request.POST.get('batch')
-        event.eligible_branch = request.POST.get('branch')
-        faculty_ids = request.POST.getlist('faculties')
-        event.eligible_faculties.set(faculty_ids)
+        # event.event_name = request.POST.get('name')
+        # event.start_datetime = request.POST.get('start_datetime')
+        # event.end_datetime = request.POST.get('end_datetime')
+        # event.eligible_batch = request.POST.get('batch')
+        # event.eligible_branch = request.POST.get('branch')
+        # faculty_ids = request.POST.getlist('faculties')
+        # event.eligible_faculties.set(faculty_ids)
 
-        event.save()
+        # event.save()
         return redirect('home')  # Redirect to a success page or home
     else:
         # For GET request, render the form with existing values

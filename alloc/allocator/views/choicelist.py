@@ -17,6 +17,11 @@ def choice_locking_message(choice):
     return message
     
 
+import logging
+
+logger = logging.getLogger('django')
+
+# @authorize_resource
 @authorize_resource
 def create_or_edit_choicelist(request, id):
     e = AllocationEvent.objects.get(id=id)
@@ -37,22 +42,30 @@ def create_or_edit_choicelist(request, id):
                         preference_list.append({"choiceNo": i, "facultyID": faculty_id})
                 try:
                     get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
-                    get_prev_choice.preference_list = preference_list
-                    get_prev_choice.save()
+                    ChoiceList.objects.update_choice_list(choice_list=get_prev_choice,preference_list=preference_list)
+                    logger.info(f"User: {curr_student.user.username} updated choices to {preference_list}")
+                    # get_prev_choice.preference_list = preference_list
+                    # get_prev_choice.save()
                 except ChoiceList.DoesNotExist:
-                    choice_list = ChoiceList.objects.create(
-                        event=e,
-                        student=request.user.student,
-                        preference_list=preference_list,
-                        cluster_number=1  # Set this based on your logic
-                    )
+                    ChoiceList.objects.create_choice_list(event=e,student=request.user.student,preference_list=preference_list,cluster_number=1)
+                    logger.info(f"User: {curr_student.user.username} created choices as {preference_list}")
+                    # choice_list = ChoiceList.objects.create(
+                    #     event=e,
+                    #     student=request.user.student,
+                    #     preference_list=preference_list,
+                    #     cluster_number=1  # Set this based on your logic
+                    # )
                 return HttpResponseRedirect(reverse('events'))
             else:
                 curr_student = Student.objects.get(user=request.user)
                 get_prev_choice = ChoiceList.objects.get(event=e, student=curr_student)
-                get_prev_choice.is_locked=True
-                get_prev_choice.save()
+
+                ChoiceList.objects.update_choice_list(choice_list=get_prev_choice,is_locked=True)
+                logger.info(f"User: {curr_student.user.username} locked choices as {get_prev_choice.preference_list}")
+                # get_prev_choice.is_locked=True
+                # get_prev_choice.save()
                 send_mail_page(curr_student.user.edu_email, "Choice Locking", choice_locking_message(get_prev_choice))
+  
                 return HttpResponseRedirect(reverse('events'))
         else:
             preference_range = range(1, e.eligible_faculties.count() + 1)
