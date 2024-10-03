@@ -9,6 +9,9 @@ from datetime import timedelta
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 
+import logging
+
+logger = logging.getLogger('django')
 
 CLASH_TIMEOUT = timedelta(days=3)
 
@@ -52,8 +55,10 @@ def resolve_clash(request, id):
         user = MyUser.objects.get(id=get_user_id)
         selected_student = Student.objects.get(user=user)
 
-        clash.selected_student = selected_student
-        clash.save()
+        Clashes.objects.update_clash(clash=clash,selected_student = selected_student)
+        logger.info(f"User: {clash.faculty.user.username} resolved clash in event {clash.event.event_name} in cluster {clash.cluster_id} to {selected_student.user.username} among {clash.list_of_students}")
+        # clash.selected_student = selected_student
+        # clash.save()
         allocate(clash.event.id)
         return HttpResponseRedirect(reverse(show_all_clashes))
 
@@ -80,7 +85,9 @@ def admin_resolve_clash(request, id):
 
     selected_student = students.order_by('-cgpa').first()
 
-    clash.selected_student = selected_student
-    clash.save()
+    Clashes.objects.update_clash(clash=clash,selected_student = selected_student)
+    logger.info(f"User: Admin resolved clash in event {clash.event.event_name} in cluster {clash.cluster_id} to {selected_student.user.username} among {clash.list_of_students}")
+    # clash.selected_student = selected_student
+    # clash.save()
     allocate(clash.event.id)
     return HttpResponseRedirect(reverse(admin_show_clash))

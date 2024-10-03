@@ -17,6 +17,32 @@ from datetime import timedelta
 
 import random
 
+
+import logging
+
+logger = logging.getLogger('django')
+
+
+@authorize_resource
+def register(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        edu_email = request.POST["nitkMailID"]
+        email = request.POST["email"]
+
+        try:
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
+            user.save()
+            logger.info(f"User: {user.username} registered")
+        except IntegrityError as e:
+            logger.exception(f"User: {user.username} already registered")
+            messages.error(request, "Roll number already exists.")
+            return HttpResponseRedirect(reverse('register'))
+
+        return HttpResponseRedirect(reverse('home'))
+    else:
+        return render(request, "allocator/register.html")
+
 ## Redundant Function which is not being used. Replaced by add_student and add_faculty
 # @authorize_resource
 # def register(request):
@@ -34,6 +60,7 @@ import random
 #         return HttpResponseRedirect(reverse('home'))
 #     else:
 #         return render(request, "allocator/register.html")
+
 
 def generate_otp():
     return random.randint(100000, 999999)
@@ -86,6 +113,16 @@ def login_view(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
             edu_email = request.POST["edu_email"]
+            next = request.POST["next"]
+            user = MyUser.objects.get(edu_email=edu_email)
+
+            if user:
+                admin_role = Role.objects.get(role_name='admin')
+                if admin_role in user.roles.all():
+                    return render(request, "allocator/login_password.html", {
+                    "next": next,
+                    "edu_email": edu_email
+                    })
             next_url = request.POST.get("next", "")
             captcha_key = request.POST.get('captcha_key')
             captcha_response = request.POST.get('captcha')
@@ -220,6 +257,25 @@ def complete_login(request) :
             next_url = request.POST["next"]
             user = authenticate(request, edu_email=edu_email, password=password)
             if user is not None :
+                login(request, user)
+                user.otp=None
+                user.save()
+                logger.info(f"User: {user.username} logged in")
+                return HttpResponseRedirect(next_url if next_url else reverse('home'))
+                # if(next_url==''):
+                #     return HttpResponseRedirect(reverse(home))
+                # else:
+                #     return HttpResponseRedirect(next_url)
+            else:
+                ############################## Need to change this #######################################
+                logger.exception(f"IP: {request.META.get('REMOTE_ADDR')} failed to login")
+                return render(request, "allocator/login.html", {
+                    "message" : "Invalid login attempt. Kindly try again.",
+                    "next": next_url
+                })
+                # messages.error(request, "Invalid login attempt. Kindly try again.")
+                # return HttpResponseRedirect(reverse(login_view))
+
                 if is_user_blocked(user):
                     messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
                     return HttpResponseRedirect(reverse(login_view))
@@ -239,8 +295,9 @@ def complete_login(request) :
     else :
         return HttpResponseRedirect(reverse('home'))
 
-@authorize_resource
+
 def logout_view(request) :
     if request.user.is_authenticated:
+            logger.info(f"User: {request.user.username} logged out")
             logout(request)
             return HttpResponseRedirect(reverse('login'))

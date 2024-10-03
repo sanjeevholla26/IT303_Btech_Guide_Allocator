@@ -3,6 +3,7 @@ from django.utils import timezone
 from enum import Enum
 from .myuser import MyUser
 from .faculty import Faculty
+from allocator.manager.allocation_event_manager import AllocationEventManager
 from .student import Student
 
 class EventStatus(Enum):
@@ -26,6 +27,8 @@ class AllocationEvent(models.Model):
     cluster_count = models.IntegerField(default=0)
     for_backlog=models.BooleanField(default=False)
     eligible_students = models.ManyToManyField(Student, related_name='eligible_events', blank=True)
+
+    objects=AllocationEventManager()
 
     def __str__(self):
         return self.event_name

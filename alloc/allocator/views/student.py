@@ -6,6 +6,11 @@ from django.urls import reverse
 from ..decorators import authorize_resource
 from ..models import MyUser, Student, Role
 
+import logging
+
+logger = logging.getLogger('django')
+
+
 @authorize_resource
 def add_student(request):
     if request.method == "POST":
@@ -31,6 +36,9 @@ def add_student(request):
             has_backlog = has_backlog
         )
         new_student.save()
+
+        # Student.objects.create_student(user=user, cgpa=cgpa, academic_year=academic_year, branch=branch)
+        logger.info(f"User: {user.username} added as Student")
 
         student_role, created = Role.objects.get_or_create(role_name="student")
         student_role.users.add(user)

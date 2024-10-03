@@ -1,4 +1,4 @@
-from .myuser import MyUser
+from allocator.models.myuser import MyUser
 from django.db import models
 
 class Role(models.Model):
