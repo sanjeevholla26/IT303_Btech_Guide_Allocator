@@ -42,7 +42,7 @@ def add_faculty(request):
         return HttpResponseRedirect(reverse('home'))
 
     else:
-        all_users = MyUser.objects.all()
+        new_faculty = MyUser.objects.exclude(faculty__isnull=False).exclude(student__isnull=False)
         return render(request, "allocator/add_faculty.html", {
-            "users": all_users
+            "users": new_faculty
         })

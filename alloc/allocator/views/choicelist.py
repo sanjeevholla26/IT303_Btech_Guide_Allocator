@@ -22,6 +22,7 @@ import logging
 logger = logging.getLogger('django')
 
 # @authorize_resource
+@authorize_resource
 def create_or_edit_choicelist(request, id):
     e = AllocationEvent.objects.get(id=id)
     user_branch = request.user.student.branch

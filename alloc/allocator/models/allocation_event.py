@@ -4,6 +4,7 @@ from enum import Enum
 from .myuser import MyUser
 from .faculty import Faculty
 from allocator.manager.allocation_event_manager import AllocationEventManager
+from .student import Student
 
 class EventStatus(Enum):
     OPEN = 'open'
@@ -24,6 +25,8 @@ class AllocationEvent(models.Model):
     eligible_branch = models.CharField(max_length=255)  # e.g., "IT,AI"
     eligible_faculties = models.ManyToManyField(Faculty, related_name='eligible_faculty_events')
     cluster_count = models.IntegerField(default=0)
+    for_backlog=models.BooleanField(default=False)
+    eligible_students = models.ManyToManyField(Student, related_name='eligible_events', blank=True)
 
     objects=AllocationEventManager()
 
