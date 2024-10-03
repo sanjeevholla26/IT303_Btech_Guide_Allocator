@@ -23,26 +23,6 @@ import logging
 logger = logging.getLogger('django')
 
 
-@authorize_resource
-def register(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        edu_email = request.POST["nitkMailID"]
-        email = request.POST["email"]
-
-        try:
-            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
-            user.save()
-            logger.info(f"User: {user.username} registered")
-        except IntegrityError as e:
-            logger.exception(f"User: {user.username} already registered")
-            messages.error(request, "Roll number already exists.")
-            return HttpResponseRedirect(reverse('register'))
-
-        return HttpResponseRedirect(reverse('home'))
-    else:
-        return render(request, "allocator/register.html")
-
 ## Redundant Function which is not being used. Replaced by add_student and add_faculty
 # @authorize_resource
 # def register(request):
@@ -50,10 +30,13 @@ def register(request):
 #         username = request.POST["username"]
 #         edu_email = request.POST["nitkMailID"]
 #         email = request.POST["email"]
+
 #         try:
 #             user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
 #             user.save()
+#             logger.info(f"User: {user.username} registered")
 #         except IntegrityError as e:
+#             logger.exception(f"User: {user.username} already registered")
 #             messages.error(request, "Roll number already exists.")
 #             return HttpResponseRedirect(reverse('register'))
 
@@ -256,26 +239,8 @@ def complete_login(request) :
             password = request.POST["password"]
             next_url = request.POST["next"]
             user = authenticate(request, edu_email=edu_email, password=password)
+            # logger.info(f"User: {user.username} logged in")
             if user is not None :
-                login(request, user)
-                user.otp=None
-                user.save()
-                logger.info(f"User: {user.username} logged in")
-                return HttpResponseRedirect(next_url if next_url else reverse('home'))
-                # if(next_url==''):
-                #     return HttpResponseRedirect(reverse(home))
-                # else:
-                #     return HttpResponseRedirect(next_url)
-            else:
-                ############################## Need to change this #######################################
-                logger.exception(f"IP: {request.META.get('REMOTE_ADDR')} failed to login")
-                return render(request, "allocator/login.html", {
-                    "message" : "Invalid login attempt. Kindly try again.",
-                    "next": next_url
-                })
-                # messages.error(request, "Invalid login attempt. Kindly try again.")
-                # return HttpResponseRedirect(reverse(login_view))
-
                 if is_user_blocked(user):
                     messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
                     return HttpResponseRedirect(reverse(login_view))
@@ -286,7 +251,15 @@ def complete_login(request) :
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
                     return send_to_otp(request, user, next_url)
+            # else:
+                # return render(request, "allocator/login.html", {
+                #     "message" : "Invalid login attempt. Kindly try again.",
+                #     "next": next_url
+                # })
+                # messages.error(request, "Invalid login attempt. Kindly try again.")
+                # return HttpResponseRedirect(reverse(login_view))
             else:
+                logger.exception(f"IP: {request.META.get('REMOTE_ADDR')} failed to login")
                 messages.error(request, f"Wrong Password. Kindly try again. {failed_attempt(edu_email)}")
                 return HttpResponseRedirect(reverse(login_view))
 

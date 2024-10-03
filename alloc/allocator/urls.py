@@ -16,6 +16,7 @@ urlpatterns = [
     path("add_permissions/", views.add_permissions, name="add_permissions"),
     path("events/", views.all_events, name="events"),
     path("choicelist/<int:id>", views.create_or_edit_choicelist, name="create_or_edit_choicelist"),
+    path("chioce_lock_otp/<int:id>", views.choice_lock_otp, name="choice_lock_otp"),
     path('edit_event/<int:id>/', views.edit_event, name='edit_event'),
     path("create_cluster/<int:id>", views.create_cluster, name="create_cluster"),
     path("admin_all_events/", views.admin_all_events, name="admin_all_events"),
