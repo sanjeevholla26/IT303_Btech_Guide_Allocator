@@ -87,9 +87,11 @@ def reset_allocation(request, id):
         get_event = AllocationEvent.objects.get(id=id)
         students_choice_list = ChoiceList.objects.filter(event=get_event)
         for s in students_choice_list:
-            s.current_allocation = None
-            s.current_index = 1
-            s.save()
+            check_backlog=s.student.has_backlog
+            if check_backlog is False:
+                s.current_allocation = None
+                s.current_index = 1
+                s.save()
 
         clashes = Clashes.objects.filter(event=get_event)
         for c in clashes:
@@ -103,6 +105,7 @@ def reset_allocation(request, id):
 
 def allot_backlog(request, id):
     event = get_object_or_404(AllocationEvent, id=id)
+    last_cluster=event.cluster_count
 
     if request.method == "POST":
         students = []
@@ -129,6 +132,7 @@ def allot_backlog(request, id):
             try:
                 faculty = Faculty.objects.get(user__id=faculty_id)
                 choice.current_allocation = faculty
+                choice.cluster_number=last_cluster
                 choice.save()
             except Faculty.DoesNotExist:
                 print(f"Faculty with user ID {faculty_id} not found")

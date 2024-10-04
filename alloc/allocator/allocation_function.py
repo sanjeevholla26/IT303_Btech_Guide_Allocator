@@ -8,7 +8,7 @@ def allocate(id):
     participating_profs = get_event.eligible_faculties.all()
 
     clashes = Clashes.objects.filter(event=get_event)
-    student_pref_list = ChoiceList.objects.filter(event=get_event).order_by('-student__cgpa', 'student__user__username')
+    student_pref_list = ChoiceList.objects.filter(event=get_event,student__has_backlog=False).order_by('-student__cgpa', 'student__user__username')
 
     for clusterID in range(1, get_event.cluster_count+1):
         choice_lists = []
