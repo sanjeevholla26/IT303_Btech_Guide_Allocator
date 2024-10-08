@@ -23,11 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-%^n&0ydk3zq$zjj26nm^nh=x7@$*u$i$2@p%!$%_+9a_!i6%f2'
 
+CAPTCHA_SECRET_KEY='6LcGOVsqAAAAALnBgiJjfKyk7t-lshJ58lirdf9V'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ADMIN_BYPASS = True
-QUICK_LOGIN = True
+ADMIN_BYPASS = False
+QUICK_LOGIN = False
 FAILS_COUNT = 3
 FAILS_DELAY = 1
 

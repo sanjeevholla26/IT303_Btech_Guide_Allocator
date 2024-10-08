@@ -11,9 +11,10 @@ from django.urls import reverse
 from django.urls import reverse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
-from alloc.settings import ADMIN_BYPASS, QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY
+from alloc.settings import ADMIN_BYPASS, QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY, CAPTCHA_SECRET_KEY
 from django.utils import timezone
 from datetime import timedelta
+import requests
 
 import random
 
@@ -92,12 +93,23 @@ def logged_in(user):
     user.failed_attempts = 0
     user.save()
 
+def verify_recaptcha(response):
+    secret_key = CAPTCHA_SECRET_KEY  # Store your secret key in settings
+    data = {
+        'secret': secret_key,
+        'response': response
+    }
+    r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+    result = r.json()
+    return result.get('success', False)
+
 def login_view(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
             edu_email = request.POST["edu_email"]
             next = request.POST["next"]
             user = MyUser.objects.get(edu_email=edu_email)
+            recaptcha_response = request.POST.get('g-recaptcha-response')  # Get reCAPTCHA response
 
             if user:
                 admin_role = Role.objects.get(role_name='admin')
@@ -106,14 +118,16 @@ def login_view(request):
                     "next": next,
                     "edu_email": edu_email
                     })
+
+            
             next_url = request.POST.get("next", "")
-            captcha_key = request.POST.get('captcha_key')
-            captcha_response = request.POST.get('captcha')
 
             try:
-                captcha = CaptchaStore.objects.get(hashkey=captcha_key)
-                print(f"My resp:{captcha_response} Actual exp:{captcha.response}")
-                if captcha.response == captcha_response:
+                    
+                if not verify_recaptcha(recaptcha_response) and not QUICK_LOGIN:  # Verify reCAPTCHA
+                    messages.error(request, "Invalid reCAPTCHA. Please try again.")
+                    return HttpResponseRedirect(reverse(login_view))
+                else:
                     try:
                         user = MyUser.objects.get(edu_email=edu_email)
                         if user:
@@ -140,10 +154,6 @@ def login_view(request):
                     except MyUser.DoesNotExist:
                         messages.error(request, "User does not exist.")
                         return HttpResponseRedirect(reverse(login_view))
-                        
-                else:
-                    messages.error(request, "Invalid captcha. Please try again.")
-                    return HttpResponseRedirect(reverse(login_view))
                     
             except CaptchaStore.DoesNotExist:
                 messages.error(request, "Captcha validation error. Please try again.")
