@@ -15,47 +15,21 @@ from alloc.settings import ADMIN_BYPASS, QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY, 
 from django.utils import timezone
 from datetime import timedelta
 import requests
-
 import random
-
-
 import logging
 
 logger = logging.getLogger('django')
 
-
-## Redundant Function which is not being used. Replaced by add_student and add_faculty
-# @authorize_resource
-# def register(request):
-#     if request.method == "POST":
-#         username = request.POST["username"]
-#         edu_email = request.POST["nitkMailID"]
-#         email = request.POST["email"]
-
-#         try:
-#             user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
-#             user.save()
-#             logger.info(f"User: {user.username} registered")
-#         except IntegrityError as e:
-#             logger.exception(f"User: {user.username} already registered")
-#             messages.error(request, "Roll number already exists.")
-#             return HttpResponseRedirect(reverse('register'))
-
-#         return HttpResponseRedirect(reverse('home'))
-#     else:
-#         return render(request, "allocator/register.html")
-
-
 def generate_otp():
     return random.randint(100000, 999999)
 
-def generate_captcha():
-    captcha_key = CaptchaStore.generate_key()
-    captcha_image = captcha_image_url(captcha_key)
-    result = ""
-    if QUICK_LOGIN:
-        result = CaptchaStore.objects.get(hashkey=captcha_key).response
-    return [captcha_key, captcha_image, result]
+# def generate_captcha():
+#     captcha_key = CaptchaStore.generate_key()
+#     captcha_image = captcha_image_url(captcha_key)
+#     result = ""
+#     if QUICK_LOGIN:
+#         result = CaptchaStore.objects.get(hashkey=captcha_key).response
+#     return [captcha_key, captcha_image, result]
 
 def send_to_otp(request, user, next_url):
     user.otp = None
@@ -107,7 +81,7 @@ def login_view(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
             edu_email = request.POST["edu_email"]
-            next = request.POST["next"]
+            next_url = request.POST.get("next", "")
             user = MyUser.objects.get(edu_email=edu_email)
             recaptcha_response = request.POST.get('g-recaptcha-response')  # Get reCAPTCHA response
 
@@ -115,12 +89,9 @@ def login_view(request):
                 admin_role = Role.objects.get(role_name='admin')
                 if admin_role in user.roles.all():
                     return render(request, "allocator/login_password.html", {
-                    "next": next,
+                    "next": next_url,
                     "edu_email": edu_email
                     })
-
-            
-            next_url = request.POST.get("next", "")
 
             try:
                     
@@ -160,9 +131,7 @@ def login_view(request):
                 return HttpResponseRedirect(reverse(login_view))
 
         else:
-            return render(request, "allocator/login.html", {
-                'captcha': generate_captcha()
-            })
+            return render(request, "allocator/login.html")
     else:
         return HttpResponseRedirect(reverse('home'))
     
