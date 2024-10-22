@@ -17,8 +17,9 @@ def add_student(request):
         username = request.POST["username"]
         edu_email = request.POST["edu_mail"]
         email = request.POST["email"]
+        mobile_number = request.POST.get("mobile_number")
         try:
-            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, mobile_number=mobile_number)
             user.save()
         except IntegrityError as e:
             messages.error(request, "Roll number already exists.")
@@ -33,7 +34,8 @@ def add_student(request):
             cgpa = cgpa,
             academic_year = academic_year,
             branch = branch,
-            has_backlog = has_backlog
+            has_backlog = has_backlog,
+            mobile_number=mobile_number
         )
         new_student.save()
 

@@ -17,6 +17,8 @@ from datetime import timedelta
 import requests
 import random
 import logging
+from twilio.rest import Client
+from django.conf import settings
 
 logger = logging.getLogger('django')
 
@@ -31,12 +33,28 @@ def generate_otp():
 #         result = CaptchaStore.objects.get(hashkey=captcha_key).response
 #     return [captcha_key, captcha_image, result]
 
+def send_sms(mobile_number, otp):
+    account_sid = settings.TWILIO_ACCOUNT_SID
+    auth_token = settings.TWILIO_AUTH_TOKEN
+    twilio_phone_number = settings.TWILIO_PHONE_NUMBER
+
+    client = Client(account_sid, auth_token)
+    
+    message = client.messages.create(
+        body=f"Dear User,\nYour Login OTP (One Time Password) is {otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.",
+        from_=twilio_phone_number,
+        to=f'+91{mobile_number}'
+    )
+    return message.sid
+
 def send_to_otp(request, user, next_url):
     user.otp = None
     user.save()
     user.otp = generate_otp()
     user.save()
     send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+    if user.mobile_number:
+        send_sms(user.mobile_number, user.otp)
     return render(request, "allocator/login_otp.html", {
             "message": "OTP has been sent to your email. Please enter it below.",
             "next": next_url,

@@ -9,6 +9,7 @@ class Student(models.Model):
     academic_year = models.IntegerField()  # e.g., 2024
     branch = models.CharField(max_length=100)
     has_backlog = models.BooleanField(default=False)
+    mobile_number = models.CharField(max_length=15, blank=True)
 
     objects=StudentManager()
 
