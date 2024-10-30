@@ -103,12 +103,13 @@ def reset_allocation(request, id):
 
 def allot_backlog(request, id):
     event = get_object_or_404(AllocationEvent, id=id)
-
+    faculty_abbreviations = [faculty.abbreviation for faculty in Faculty.objects.all()]
+    
     if request.method == "POST":
         students = []
         faculties = []
         
-        # Iterate through the POST data to extract the student-faculty pairs
+        # Iterate through POST data to extract the student-faculty pairs
         for key, value in request.POST.items():
             if key.startswith('student_'):
                 choice_id = key.split('_')[1]
@@ -123,7 +124,7 @@ def allot_backlog(request, id):
         
         # Process the collected student and faculty data
         for student_id, faculty_id in zip(students, faculties):
-            choice = ChoiceList.objects.get(student_id=student_id, event=event)
+            choice = ChoiceList.objects.select_related('student', 'current_allocation').get(student_id=student_id, event=event)
             
             # Find the corresponding faculty
             try:
@@ -133,17 +134,11 @@ def allot_backlog(request, id):
             except Faculty.DoesNotExist:
                 print(f"Faculty with user ID {faculty_id} not found")
 
-        # After saving the data, redirect to a success page or home
-        return redirect('home')  # Redirect to the appropriate view after processing
+    # Fetch backlog-allotted data and render it on the same page
+    backlog_alloted = ChoiceList.objects.filter(event=event).select_related('student', 'current_allocation')
 
-    else:
-        event = AllocationEvent.objects.get(id=id)
-        backlog_alloted = ChoiceList.objects.filter(event=event)
-
-        # Prepare the faculty abbreviations for the template
-        faculty_abbreviations = [faculty.abbreviation for faculty in Faculty.objects.all()]
-
-        return render(request, 'create_cluster.html', {
-            'backlog_alloted': backlog_alloted,
-            'faculty_abbreviations': faculty_abbreviations,  # Include all faculty abbreviations
-        })
+    return render(request, 'allocator/create_cluster.html', {
+        'event': event,
+        'backlog_alloted': backlog_alloted,
+        'faculty_abbreviations': faculty_abbreviations,
+    })

@@ -5,6 +5,7 @@
 <meta charset="UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
 {% endblock %}
 {% block title %}
 Event Control
@@ -12,109 +13,126 @@ Event Control
 
 {% block body %}
 <div class="reg-userform">
-    <h1>Run allocation:</h1>
-    {% if event.cluster_count == 0 %}
-    <form action="{% url 'create_cluster' id=event.id %}" method="post" class="reg-userform-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Create Cluster</button>
-    </form>
-    {% else %}
-    <form action="{% url 'run_allocation' id=event.id %}" method="post" class="reg-userform-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Run Allocation</button>
-    </form>
-    <form action="{% url 'generate_student_pdf' id=event.id %}" method="post" class="reg-userform-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Send reports to students</button>
-    </form>
-    <form action="{% url 'generate_faculty_pdf' id=event.id %}" method="post" class="reg-userform-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Send reports to faculty</button>
-    </form>
-    <form action="{% url 'generate_admin_pdf' id=event.id %}" method="post" class="reg-userform-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Send reports to admin</button>
-    </form>
-    <form action="{% url 'reset_allocation' id=event.id %}" method="post" class="reg-userform-form">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Reset Allocation</button>
-    </form>
 
+    <!-- <div class="button-section"> -->
+
+        <h1>Run allocation</h1>
+        {% if event.cluster_count == 0 %}
+        <form action="{% url 'create_cluster' id=event.id %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Create Cluster</button>
+        </form>
+        {% else %}
+        <form action="{% url 'run_allocation' id=event.id %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Run Allocation</button>
+        </form>
+        <form action="{% url 'generate_student_pdf' id=event.id %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Send reports to students</button>
+        </form>
+        <form action="{% url 'generate_faculty_pdf' id=event.id %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Send reports to faculty</button>
+        </form>
+        <form action="{% url 'generate_admin_pdf' id=event.id %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Send reports to admin</button>
+        </form>
+        <form action="{% url 'reset_allocation' id=event.id %}" method="post" class="reg-userform-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Reset Allocation</button>
+        </form>
+    <!-- </div> -->
+
+    
     <h2>Cluster Assignment Summary</h2>
-    {% for cluster_number, choices in clusters.items %}
-    <h3>Cluster {{ cluster_number }} ({{ choices|length }} students)</h3>
-    <table border="1" class="table table-striped">
-        <thead>
-            <tr>
-                <th>Student</th>
-                <th>CGPA</th>
-                <th>Allotted Professor</th>
-                <th>Processed Choice(s)</th>
-                <th>Current Choice</th>
-                <th>Next Choice(s)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for choice in choices %}
-            <tr>
-                <td>{{ choice.student.user.username }}</td>
-                <td>{{ choice.student.cgpa }}</td>
-                {% if choice.allottedProf %}
-                    <td class="bg-success">{{ choice.allottedProf }}</td>
-                {% else %}
-                    <td>{{ choice.allottedProf }}</td>
-                {% endif %}
-                <td>{{ choice.previousChoices }}</td>
-                {% if choice.currentChoice %}
-                    <td class="bg-warning">{{ choice.currentChoice }}</td>
-                {% else %}
-                    <td>{{ choice.currentChoice }}</td>
-                {% endif %}
-                <td>{{ choice.nextChoices }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endfor %}
-    {% endif %}
-
+    <div>
+        {% for cluster_number, choices in clusters.items %}
+        <h3>Cluster {{ cluster_number }} ({{ choices|length }} students)</h3>
+        <table border="1" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>CGPA</th>
+                    <th>Allotted Professor</th>
+                    <th>Processed Choice(s)</th>
+                    <th>Current Choice</th>
+                    <th>Next Choice(s)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for choice in choices %}
+                <tr>
+                    <td>{{ choice.student.user.username }}</td>
+                    <td>{{ choice.student.cgpa }}</td>
+                    {% if choice.allottedProf %}
+                        <td class="bg-success">{{ choice.allottedProf }}</td>
+                    {% else %}
+                        <td>{{ choice.allottedProf }}</td>
+                    {% endif %}
+                    <td>{{ choice.previousChoices }}</td>
+                    {% if choice.currentChoice %}
+                        <td class="bg-warning">{{ choice.currentChoice }}</td>
+                    {% else %}
+                        <td>{{ choice.currentChoice }}</td>
+                    {% endif %}
+                    <td>{{ choice.nextChoices }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+    </div>
+    
     {% if backlog_alloted %}
-    <h2>Allocated Backlog Students</h2>
-    <table border="1" class="table table-striped">
-        <thead>
-            <tr>
-                <th>Student</th>
-                <th>CGPA</th>
-                <th>Allocated Professor</th>
-                <th>Current Choice</th>
-                <th>Next Choice(s)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for choice in backlog_alloted %}
-            <tr>
-                <td>{{ choice.student.user.username }}</td>
-                <td>{{ choice.student.cgpa }}</td>
-                {% if choice.current_allocation.abbreviation %}
-                    <td class="bg-success">{{ choice.current_allocation.abbreviation }}</td> 
-                {% else %}
-                    <td>{{ choice.current_allocation.abbreviation }}</td>
-                {% endif %}
-                <td class="bg-warning">{{ choice.preference_list.0.facultyID|get_faculty_abbreviation }}</td>
-                <td>
-                    {% for preference in choice.preference_list %}
-                        {% if preference.facultyID|get_faculty_abbreviation != choice.preference_list.0.facultyID|get_faculty_abbreviation %}
-                            {{ preference.facultyID|get_faculty_abbreviation }}{% if not forloop.last %}, {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                </td>               
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    
+
+        <h3>Allocated Backlog Students</h3>
+        <table border="1" class="table table-striped table-current-batch">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>CGPA</th>
+                    <th>Allocated Professor</th>
+                    <th>Processed Choice(s)</th>
+                    <th>Current Choice</th>
+                    <th>Next Choice(s)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for choice in backlog_alloted %}
+                <tr>
+                    <td>{{ choice.student.user.username }}</td>
+                    <td>{{ choice.student.cgpa }}</td>
+                    {% if choice.current_allocation.abbreviation %}
+                        <td class="bg-success">{{ choice.current_allocation.abbreviation }}</td> 
+                    {% else %}
+                        <td>{{ choice.current_allocation.abbreviation }}</td>
+                    {% endif %}
+                    <td>
+                        {% for preference in choice.preference_list %}
+                            {% if preference.facultyID|get_faculty_abbreviation != choice.preference_list.0.facultyID|get_faculty_abbreviation %}
+                                {{ preference.facultyID|get_faculty_abbreviation }}{% if not forloop.last %}, {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>  
+                    <td class="bg-warning">{{ choice.preference_list.0.facultyID|get_faculty_abbreviation }}</td>
+                    <td>
+                        {% for preference in choice.preference_list %}
+                            {% if preference.facultyID|get_faculty_abbreviation != choice.preference_list.0.facultyID|get_faculty_abbreviation %}
+                                {{ preference.facultyID|get_faculty_abbreviation }}{% if not forloop.last %}, {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>               
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
     {% endif %}
-
-
+    
     <!-- Backlog Students Section -->
     {% if backlog %}
     <h2>Backlog Students Allocation</h2>
@@ -154,7 +172,6 @@ Event Control
     {% endif %}
 </div>
 
-
 <style>
     form{
         margin-bottom: 10px;
@@ -166,6 +183,7 @@ Event Control
     margin: auto;
     border-radius: 0;
     filter: none;
+    
 }
 
 .reg-userform>h1 {
@@ -191,5 +209,7 @@ p {
     margin-left: 3%;
     margin-top: 1rem;
 }
+
+
 </style>
 {% endblock %}

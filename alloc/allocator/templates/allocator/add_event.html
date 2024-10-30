@@ -39,11 +39,12 @@
             </div>
             <div class="form-group">
                 <label for="faculties">Select Eligible Faculties</label>
-                <select id="faculties" class="form-control" name="faculties" multiple required>
-                    {% for faculty in faculties %}
-                    <option value="{{faculty.user.id}}">{{ faculty.user }}</option>
-                    {% endfor %}
-                </select>
+                {% for faculty in faculties %}
+                    <div class="form-check">
+                        <input type="checkbox" id="faculty-{{ faculty.user.id }}" class="form-check-input" name="faculties" value="{{ faculty.user.id }}">
+                        <label class="form-check-label" for="faculty-{{ faculty.user.id }}">{{ faculty.user }}</label>
+                    </div>
+                {% endfor %}
             </div>
             <button type="submit" class="btn btn-primary">Add Event</button>
         </form>

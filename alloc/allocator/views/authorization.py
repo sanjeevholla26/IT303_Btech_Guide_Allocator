@@ -256,6 +256,7 @@ def complete_login(request) :
             password = request.POST["password"]
             next_url = request.POST["next"]
             user = authenticate(request, edu_email=edu_email, password=password)
+            
             if user is not None :
                 login(request, user)
                 user.otp=None
@@ -279,6 +280,7 @@ def complete_login(request) :
                 if is_user_blocked(user):
                     messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
                     return HttpResponseRedirect(reverse(login_view))
+                
                 admin_role = Role.objects.get(role_name='admin')
                 if (ADMIN_BYPASS and admin_role in user.roles.all()) or QUICK_LOGIN:
                     login(request, user)
@@ -286,7 +288,7 @@ def complete_login(request) :
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
                     return send_to_otp(request, user, next_url)
-            else:
+            # else:
                 messages.error(request, f"Wrong Password. Kindly try again. {failed_attempt(edu_email)}")
                 return HttpResponseRedirect(reverse(login_view))
 
