@@ -4,18 +4,18 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, edu_email, email, username, password=None, **extra_fields):
+    def create_user(self, edu_email, email, mobile_number, username, password=None, **extra_fields):
         if not edu_email:
             raise ValueError('The edu_email field must be set')
         if not edu_email.endswith("@nitk.edu.in"):
             raise ValueError('The Email ID must be an NITK edu mail ID.')
         edu_email = self.normalize_email(edu_email)
-        user = self.model(username=username.strip(), email=email, edu_email=edu_email, **extra_fields)
+        user = self.model(username=username.strip(), email=email, edu_email=edu_email, mobile_number=mobile_number, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, edu_email, password=None, **extra_fields):
+    def create_superuser(self, username, edu_email, mobile_number, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -26,7 +26,7 @@ class CustomUserManager(BaseUserManager):
         
         username="Admin"
 
-        created_user = self.create_user(edu_email, "default@gmail.com", username, password, **extra_fields)
+        created_user = self.create_user(edu_email, "default@gmail.com", mobile_number, username, password,**extra_fields)
         created_user.is_registered = True
         created_user.save()
         
@@ -36,7 +36,7 @@ class CustomUserManager(BaseUserManager):
 class MyUser(AbstractUser):
     # email = models.EmailField(unique=True)  # Override the default email field to make it unique
     edu_email = models.EmailField(unique=True)
-    mobile_number = models.CharField(max_length=15)
+    mobile_number = models.CharField(max_length=15, null=False)
     otp = models.CharField(max_length=10, blank=True, null=True)
     is_registered = models.BooleanField(default=False)
     failed_attempts = models.IntegerField(default=0)
@@ -48,7 +48,7 @@ class MyUser(AbstractUser):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'edu_email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'mobile_number']
 
     def has_permission(self, fun, app):
         roles = self.roles.all()

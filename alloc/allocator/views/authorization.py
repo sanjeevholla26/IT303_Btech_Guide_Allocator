@@ -108,45 +108,38 @@ def login_view(request):
             except MyUser.DoesNotExist:
                 messages.error(request, "User does not exist.")
                 return HttpResponseRedirect(reverse(login_view))
-            
+            if not user:
+                messages.error(request, "Invalid username.")
+                return HttpResponseRedirect(reverse(login_view))
+            if is_user_blocked(user):
+                messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
+                return HttpResponseRedirect(reverse(login_view))
             recaptcha_response = request.POST.get('g-recaptcha-response')  # Get reCAPTCHA response
-
-            if user and ADMIN_BYPASS:
+            if ADMIN_BYPASS:
                 admin_role = Role.objects.get(role_name='admin')
                 if admin_role in user.roles.all():
                     return render(request, "allocator/login_password.html", {
                     "next": next_url,
                     "edu_email": edu_email
                     })
-
             try:
-                    
                 if not verify_recaptcha(recaptcha_response) and not QUICK_LOGIN:  # Verify reCAPTCHA
                     messages.error(request, "Invalid reCAPTCHA. Please try again.")
                     return HttpResponseRedirect(reverse(login_view))
                 else:
-                        if user:
-                            if is_user_blocked(user):
-                                messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
-                                return HttpResponseRedirect(reverse(login_view))
-                            if user.is_registered:
-                                return render(request, "allocator/login_password.html", {
-                                    "next": next_url,
-                                    "edu_email": edu_email
-                                })
-                            else:
-                                if QUICK_LOGIN:
-                                    return render(request, "allocator/login_create_password.html", {
-                                        "next": next_url,
-                                        "edu_email": edu_email
-                                    })
-                                else:
-                                    return send_to_otp(request, user, next_url)
+                    if user.is_registered:
+                        return render(request, "allocator/login_password.html", {
+                            "next": next_url,
+                            "edu_email": edu_email
+                        })
+                    else:
+                        if QUICK_LOGIN:
+                            return render(request, "allocator/login_create_password.html", {
+                                "next": next_url,
+                                "edu_email": edu_email
+                            })
                         else:
-                            messages.error(request, "Invalid username.")
-                            return HttpResponseRedirect(reverse(login_view))
-                            
-                    
+                            return send_to_otp(request, user, next_url)                    
             except CaptchaStore.DoesNotExist:
                 messages.error(request, "Captcha validation error. Please try again.")
                 return HttpResponseRedirect(reverse(login_view))
@@ -177,7 +170,6 @@ def otp(request) :
                         "next": next_url,
                         "edu_email": edu_email
                     })
-
             else :
                 messages.error(request, f"Invalid OTP. Kindly restart the login. {failed_attempt(edu_email)}")
                 return HttpResponseRedirect(reverse(login_view))
@@ -210,28 +202,27 @@ def create_password(request) :
             if is_user_blocked(user):
                 messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
                 return HttpResponseRedirect(reverse(login_view))
-            if password == repassword:
-                if validatePassword(password):
-                    user.otp=None
-                    user.set_password(password)
-                    user.is_registered = True
-                    user.save()
-                    authenticate(request, edu_email=edu_email, password=password)
-                    login(request, user)
-                    logged_in(user)
-                    return HttpResponseRedirect(next_url if next_url else reverse('home'))
-                else:
-                    return render(request, "allocator/login_create_password.html", {
-                        "message" : "Invalid password format. Kindly read the rules and try again.",
-                        "next": next_url,
-                        "edu_email": edu_email
-                    })
-            else:            
+            if password != repassword:
                 return render(request, "allocator/login_create_password.html", {
                     "message" : "Passwords don't match.",
                     "next": next_url,
                     "edu_email": edu_email
                 })
+            if validatePassword(password):
+                user.otp=None
+                user.set_password(password)
+                user.is_registered = True
+                user.save()
+                authenticate(request, edu_email=edu_email, password=password)
+                login(request, user)
+                logged_in(user)
+                return HttpResponseRedirect(next_url if next_url else reverse('home'))
+            else:
+                return render(request, "allocator/login_create_password.html", {
+                    "message" : "Invalid password format. Kindly read the rules and try again.",
+                    "next": next_url,
+                    "edu_email": edu_email
+                })           
         else :
             return HttpResponseRedirect(reverse(login_view))
     else :
@@ -256,18 +247,10 @@ def complete_login(request) :
                     return HttpResponseRedirect(next_url if next_url else reverse('home'))
                 else:
                     return send_to_otp(request, user, next_url)
-            # else:
-                # return render(request, "allocator/login.html", {
-                #     "message" : "Invalid login attempt. Kindly try again.",
-                #     "next": next_url
-                # })
-                # messages.error(request, "Invalid login attempt. Kindly try again.")
-                # return HttpResponseRedirect(reverse(login_view))
             else:
                 logger.exception(f"IP: {request.META.get('REMOTE_ADDR')} failed to login")
                 messages.error(request, f"Wrong Password. Kindly try again. {failed_attempt(edu_email)}")
                 return HttpResponseRedirect(reverse(login_view))
-
         else :
             return HttpResponseRedirect(reverse(login_view))
     else :
@@ -276,6 +259,6 @@ def complete_login(request) :
 
 def logout_view(request) :
     if request.user.is_authenticated:
-            logger.info(f"User: {request.user.username} logged out")
-            logout(request)
-            return HttpResponseRedirect(reverse('login'))
+        logger.info(f"User: {request.user.username} logged out")
+        logout(request)
+        return HttpResponseRedirect(reverse('login'))

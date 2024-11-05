@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.contrib.auth import logout
 from ..decorators import authorize_resource
 from ..models import AllocationEvent, Faculty, Student, ChoiceList, MyUser
+from alloc.settings import SWIFT_OTP
 from ..email_sender import send_mail_page
 from .home import home
 import logging
@@ -24,6 +25,8 @@ def choice_locking_message(choice):
     return message
 
 def generate_otp():
+    if SWIFT_OTP:
+        return 1
     return random.randint(100000, 999999)    
 
 def send_to_otp(user):
@@ -42,8 +45,6 @@ def choice_lock_otp(request, id):
             choice = ChoiceList.objects.get(id=id)
             otp = request.POST["otp_entry"]
             if user and user.otp == otp:
-                # send_mail_page(user.edu_email, "Choice Locking", choice_locking_message(choice))     
-
                 ChoiceList.objects.update_choice_list(choice_list=choice,is_locked=True)
                 logger.info(f"User: {user.username} locked choices as {choice.preference_list}")
                 # get_prev_choice.is_locked=True
@@ -87,17 +88,12 @@ def create_or_edit_choicelist(request, id):
                 except ChoiceList.DoesNotExist:
                     ChoiceList.objects.create_choice_list(event=e,student=request.user.student,preference_list=preference_list,cluster_number=1)
                     logger.info(f"User: {curr_student.user.username} created choices as {preference_list}")
-                    # choice_list = ChoiceList.objects.create(
-                    #     event=e,
-                    #     student=request.user.student,
-                    #     preference_list=preference_list,
-                    #     cluster_number=1  # Set this based on your logic
-                    # )
                 return HttpResponseRedirect(reverse('events'))
             else:
                 curr_student = Student.objects.get(user=request.user)
                 choice = ChoiceList.objects.get(event=e, student=curr_student)
-                send_to_otp(request.user)
+                if not SWIFT_OTP:
+                    send_to_otp(request.user)
                 messages.error(request, f"OTP has been mailed.")
                 return render(request, "choice_lock_otp.html", {'id': choice.id})
         else:
