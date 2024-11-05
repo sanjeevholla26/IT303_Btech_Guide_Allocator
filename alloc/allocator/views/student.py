@@ -1,3 +1,4 @@
+import re
 from django.db import IntegrityError
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -16,8 +17,14 @@ def add_student(request):
     if request.method == "POST":
         username = request.POST["username"]
         edu_email = request.POST["edu_mail"]
+        if not edu_email.endswith("@nitk.edu.in"):
+            messages.error(request, "The Email ID must be an NITK edu mail ID.")
+            return HttpResponseRedirect(reverse('add_student'))
         email = request.POST["email"]
         mobile_number = request.POST.get("mobile_number")
+        if not re.fullmatch(r'^\d{10}$', mobile_number):
+            messages.error(request, "Mobile number must be exactly 10 digits.")
+            return HttpResponseRedirect(reverse('add_student'))
         try:
             user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, mobile_number=mobile_number)
             user.save()
@@ -25,9 +32,24 @@ def add_student(request):
             messages.error(request, "Roll number already exists.")
             return HttpResponseRedirect(reverse('add_student'))
         
-        cgpa = request.POST["cgpa"]
+        # Retrieve CGPA from the form and check if it's within the allowed range
+        cgpa = float(request.POST["cgpa"])
+        if cgpa < 0.0 or cgpa > 10.0:
+            messages.error(request, "CGPA must be between 0.0 and 10.0.")
+            return HttpResponseRedirect(reverse('add_student'))
+            
+        # Retrieve academic year from the form and check if it's a 4-digit number
         academic_year = request.POST["aca_year"]
-        branch = request.POST["branch"] 
+        if not academic_year.isdigit() or len(academic_year) != 4:
+            messages.error(request, "Academic year must be a 4-digit number.")
+            return HttpResponseRedirect(reverse('add_student'))
+
+        # Retrieve branch from the form and check if it matches "AI" or "IT"
+        branch = request.POST["branch"]
+        if branch not in ["AI", "IT"]:
+            messages.error(request, "Branch must be either 'AI' or 'IT'.")
+            return HttpResponseRedirect(reverse('add_student'))
+        
         has_backlog = request.POST.get("has_backlog") == 'true'
         new_student = Student(
             user = user,

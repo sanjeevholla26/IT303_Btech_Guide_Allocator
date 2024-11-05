@@ -1,3 +1,4 @@
+import re
 from django.db import IntegrityError
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -14,10 +15,17 @@ logger = logging.getLogger('django')
 def add_faculty(request):
     if request.method == "POST":
         edu_email = request.POST["edu_mail"]
+        if not edu_email.endswith("@nitk.edu.in"):
+            messages.error(request, "The Email ID must be an NITK edu mail ID.")
+            return HttpResponseRedirect(reverse('add_faculty'))
         email = request.POST["email"]
         username = request.POST["username"]
+        mobile_number = request.POST.get("mobile_number")
+        if not re.fullmatch(r'^\d{10}$', mobile_number):
+            messages.error(request, "Mobile number must be exactly 10 digits.")
+            return HttpResponseRedirect(reverse('add_student'))
         try:
-            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username)
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, mobile_number=mobile_number)
             user.save()
         except IntegrityError as e:
             messages.error(request, "Employee ID already exists.")
