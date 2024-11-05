@@ -50,8 +50,8 @@ def generate_student_pdf(request, id):
 
         data = [
             ['Field', 'Details'],  # Table header
-            ['Name', allocation.student.user.username],  # Student's name
-            ['Professor', allocation.current_allocation.user.username],  # Professor name
+            ['Name', allocation.student.user.first_name+' '+allocation.student.user.last_name],  # Student's name
+            ['Professor', allocation.current_allocation.user.first_name+' '+allocation.current_allocation.user.last_name],  # Professor name
             ['Email', allocation.student.user.email],  # Email address
             ['Date of Allocation', datetime.now().strftime("%Y-%m-%d")]  # Allocation date
         ]
