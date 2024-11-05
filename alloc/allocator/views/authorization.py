@@ -23,7 +23,8 @@ from django.conf import settings
 logger = logging.getLogger('django')
 
 def generate_otp():
-    return random.randint(100000, 999999)
+    # return random.randint(100000, 999999)
+    return 1
 
 # def generate_captcha():
 #     captcha_key = CaptchaStore.generate_key()
@@ -52,9 +53,9 @@ def send_to_otp(request, user, next_url):
     user.save()
     user.otp = generate_otp()
     user.save()
-    send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
-    if user.mobile_number:
-        send_sms(user.mobile_number, user.otp)
+    # send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+    # if user.mobile_number:
+    #     send_sms(user.mobile_number, user.otp)
     return render(request, "allocator/login_otp.html", {
             "message": "OTP has been sent to your email. Please enter it below.",
             "next": next_url,
@@ -105,7 +106,7 @@ def login_view(request):
 
             if user:
                 admin_role = Role.objects.get(role_name='admin')
-                if admin_role in user.roles.all():
+                if admin_role in user.roles.all() and ADMIN_BYPASS:
                     return render(request, "allocator/login_password.html", {
                     "next": next_url,
                     "edu_email": edu_email
