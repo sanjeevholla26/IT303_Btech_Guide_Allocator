@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.urls import reverse
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
-from alloc.settings import ADMIN_BYPASS, QUICK_LOGIN, FAILS_COUNT, FAILS_DELAY, CAPTCHA_SECRET_KEY
+from alloc.settings import ADMIN_BYPASS, QUICK_LOGIN, SWIFT_OTP, FAILS_COUNT, FAILS_DELAY, CAPTCHA_SECRET_KEY
 from django.utils import timezone
 from datetime import timedelta
 import requests
@@ -23,8 +23,9 @@ from django.conf import settings
 logger = logging.getLogger('django')
 
 def generate_otp():
-    # return random.randint(100000, 999999)
-    return 1
+    if SWIFT_OTP:
+        return 1
+    return random.randint(100000, 999999)
 
 # def generate_captcha():
 #     captcha_key = CaptchaStore.generate_key()
@@ -53,9 +54,10 @@ def send_to_otp(request, user, next_url):
     user.save()
     user.otp = generate_otp()
     user.save()
-    # send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
-    # if user.mobile_number:
-    #     send_sms(user.mobile_number, user.otp)
+    if not SWIFT_OTP:
+        send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+        if user.mobile_number:
+            send_sms(user.mobile_number, user.otp)
     return render(request, "allocator/login_otp.html", {
             "message": "OTP has been sent to your email. Please enter it below.",
             "next": next_url,
@@ -101,12 +103,17 @@ def login_view(request):
         if request.method == "POST":
             edu_email = request.POST["edu_email"]
             next_url = request.POST.get("next", "")
-            user = MyUser.objects.get(edu_email=edu_email)
+            try:
+                user = MyUser.objects.get(edu_email=edu_email)
+            except MyUser.DoesNotExist:
+                messages.error(request, "User does not exist.")
+                return HttpResponseRedirect(reverse(login_view))
+            
             recaptcha_response = request.POST.get('g-recaptcha-response')  # Get reCAPTCHA response
 
-            if user:
+            if user and ADMIN_BYPASS:
                 admin_role = Role.objects.get(role_name='admin')
-                if admin_role in user.roles.all() and ADMIN_BYPASS:
+                if admin_role in user.roles.all():
                     return render(request, "allocator/login_password.html", {
                     "next": next_url,
                     "edu_email": edu_email
@@ -118,8 +125,6 @@ def login_view(request):
                     messages.error(request, "Invalid reCAPTCHA. Please try again.")
                     return HttpResponseRedirect(reverse(login_view))
                 else:
-                    try:
-                        user = MyUser.objects.get(edu_email=edu_email)
                         if user:
                             if is_user_blocked(user):
                                 messages.error(request, f"User is blocked. Wait till {user.failed_blocked} to login.")
@@ -141,14 +146,10 @@ def login_view(request):
                             messages.error(request, "Invalid username.")
                             return HttpResponseRedirect(reverse(login_view))
                             
-                    except MyUser.DoesNotExist:
-                        messages.error(request, "User does not exist.")
-                        return HttpResponseRedirect(reverse(login_view))
                     
             except CaptchaStore.DoesNotExist:
                 messages.error(request, "Captcha validation error. Please try again.")
                 return HttpResponseRedirect(reverse(login_view))
-
         else:
             return render(request, "allocator/login.html")
     else:
@@ -186,8 +187,14 @@ def otp(request) :
         return HttpResponseRedirect(reverse('home'))
 
 def validatePassword(password):
-    # Perform regex checks on the password validity
-    return True
+    # return True
+    length = len(password)
+    digits = sum(map(str.isdigit, password))
+    alphas = sum(map(str.isalpha, password))
+    others = length - digits - alphas
+    upper = sum(map(str.isupper, password))
+    result = length>=6 and digits>=1 and alphas>=1 and others>=1 and upper>=1 and upper!=alphas
+    return result
 
 def create_password(request) :
     if not request.user.is_authenticated:
