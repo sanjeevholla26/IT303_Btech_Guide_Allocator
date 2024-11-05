@@ -21,11 +21,13 @@ def add_faculty(request):
         email = request.POST["email"]
         username = request.POST["username"]
         mobile_number = request.POST.get("mobile_number")
+        fname = request.POST["fname"]
+        lname = request.POST["lname"]
         if not re.fullmatch(r'^\d{10}$', mobile_number):
             messages.error(request, "Mobile number must be exactly 10 digits.")
             return HttpResponseRedirect(reverse('add_student'))
         try:
-            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, mobile_number=mobile_number)
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, first_name = fname, last_name = lname, mobile_number=mobile_number)
             user.save()
         except IntegrityError as e:
             messages.error(request, "Employee ID already exists.")

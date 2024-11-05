@@ -21,12 +21,14 @@ def add_student(request):
             messages.error(request, "The Email ID must be an NITK edu mail ID.")
             return HttpResponseRedirect(reverse('add_student'))
         email = request.POST["email"]
+        fname = request.POST["fname"]
+        lname = request.POST["lname"]
         mobile_number = request.POST.get("mobile_number")
         if not re.fullmatch(r'^\d{10}$', mobile_number):
             messages.error(request, "Mobile number must be exactly 10 digits.")
             return HttpResponseRedirect(reverse('add_student'))
         try:
-            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, mobile_number=mobile_number)
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, first_name = fname, last_name = lname, mobile_number=mobile_number)
             user.save()
         except IntegrityError as e:
             messages.error(request, "Roll number already exists.")
@@ -56,8 +58,7 @@ def add_student(request):
             cgpa = cgpa,
             academic_year = academic_year,
             branch = branch,
-            has_backlog = has_backlog,
-            mobile_number=mobile_number
+            has_backlog = has_backlog
         )
         new_student.save()
 
