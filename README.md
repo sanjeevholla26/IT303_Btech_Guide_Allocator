@@ -1,5 +1,21 @@
 # IT303_Btech_Guide_Allocator
 
+## Set-up Instructions :
+
+- Run the `db_builder.sh` file.
+- Run the below command to create the superuser admin.
+```bash
+python manage.py createsuperuser
+```
+- Assign the admin you created by running the `role_builder.py` file.
+
+- Redis Setup :
+  - Install Redis
+  - Remove comment from bind 127.0.0.1 in .conf file(redis.windows.config)
+  - Start redis server using config file in Redis installed directory [redis-server ./redis.windows.config]
+  - To start redis for out task(email): python -m celery -A alloc worker --pool=solo -l info
+  - Create a logs folder and create a file named django.logs
+
 ## Permissions 
 
 1. Roles - admin
@@ -16,8 +32,3 @@
 
 app name - allocator (common for all)
 
-
-Install Redis
-   Remove comment from bind 127.0.0.1 in .conf file(redis.windows.config)
-   Start redis server using config file in Redis installed directory [redis-server ./redis.windows.config]
-   To start redis for out task(email): python -m celery -A alloc worker --pool=solo -l info
