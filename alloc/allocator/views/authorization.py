@@ -35,7 +35,7 @@ def generate_otp():
 #         result = CaptchaStore.objects.get(hashkey=captcha_key).response
 #     return [captcha_key, captcha_image, result]
 
-def send_sms(mobile_number, otp):
+def send_sms(mobile_number, otp, recv_name):
     account_sid = settings.TWILIO_ACCOUNT_SID
     auth_token = settings.TWILIO_AUTH_TOKEN
     twilio_phone_number = settings.TWILIO_PHONE_NUMBER
@@ -43,7 +43,7 @@ def send_sms(mobile_number, otp):
     client = Client(account_sid, auth_token)
     
     message = client.messages.create(
-        body=f"Dear User,\nYour Login OTP (One Time Password) is {otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.",
+        body=f"Dear {recv_name},\nYour Login OTP (One Time Password) is {otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.",
         from_=twilio_phone_number,
         to=f'+91{mobile_number}'
     )
@@ -54,10 +54,13 @@ def send_to_otp(request, user, next_url):
     user.save()
     user.otp = generate_otp()
     user.save()
+    recv_name = "User"
+    if user.first_name:
+        recv_name = user.first_name
     if not SWIFT_OTP:
-        send_mail_page(user.edu_email, 'Login OTP', f"Dear User,\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+        send_mail_page(user.edu_email, 'Login OTP', f"Dear {user.first_name},\nYour Login OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
         if user.mobile_number:
-            send_sms(user.mobile_number, user.otp)
+            send_sms(user.mobile_number, user.otp, recv_name)
     return render(request, "allocator/login_otp.html", {
             "message": "OTP has been sent to your email. Please enter it below.",
             "next": next_url,

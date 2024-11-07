@@ -14,6 +14,9 @@ import random
 logger = logging.getLogger('django')
 
 def choice_locking_message(choice):
+    recv_name = "User"
+    if choice.student.user.first_name:
+        recv_name = choice.student.user.first_name
     message = "Dear student,\n"
     preferences = ""
     for pref in choice.preference_list:
@@ -35,7 +38,11 @@ def send_to_otp(user):
     user.save()
     user.otp = generate_otp()
     user.save()
-    send_mail_page(user.edu_email, 'Choice Locking OTP', f"Dear User,\nYour Choice Locking OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
+    recv_name = "User"
+    if user.first_name:
+        recv_name = user.first_name
+    if not SWIFT_OTP:
+        send_mail_page(user.edu_email, 'Choice Locking OTP', f"Dear {recv_name},\nYour Choice Locking OTP(One Time Password) is {user.otp}. Kindly use this OTP to login.\nThank you.\nB.Tech Major Project Team.")
 
 @authorize_resource
 def choice_lock_otp(request, id):
@@ -92,8 +99,7 @@ def create_or_edit_choicelist(request, id):
             else:
                 curr_student = Student.objects.get(user=request.user)
                 choice = ChoiceList.objects.get(event=e, student=curr_student)
-                if not SWIFT_OTP:
-                    send_to_otp(request.user)
+                send_to_otp(request.user)
                 messages.error(request, f"OTP has been mailed.")
                 return render(request, "choice_lock_otp.html", {'id': choice.id})
         else:

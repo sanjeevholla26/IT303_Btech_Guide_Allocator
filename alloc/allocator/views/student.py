@@ -28,7 +28,7 @@ def add_student(request):
             messages.error(request, "Mobile number must be exactly 10 digits.")
             return HttpResponseRedirect(reverse('add_student'))
         try:
-            user = MyUser.objects.create_user(edu_email=edu_email, email=email, username=username, first_name = fname, last_name = lname, mobile_number=mobile_number)
+            user = MyUser.objects.create_user(edu_email=edu_email, email=email, mobile_number=mobile_number, username=username, first_name = fname, last_name = lname)
             user.save()
         except IntegrityError as e:
             messages.error(request, "Roll number already exists.")
