@@ -15,23 +15,23 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 
+
+## ADD CREDENTIALS HERE
+
+## END
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%^n&0ydk3zq$zjj26nm^nh=x7@$*u$i$2@p%!$%_+9a_!i6%f2'
-
-CAPTCHA_SECRET_KEY='6LcGOVsqAAAAALnBgiJjfKyk7t-lshJ58lirdf9V'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ADMIN_BYPASS = False
+ADMIN_BYPASS = True
 QUICK_LOGIN = False
+SWIFT_OTP = True
 FAILS_COUNT = 3
 FAILS_DELAY = 1
 
@@ -148,12 +148,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+# TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
 LOGIN_URL = '/'
 
